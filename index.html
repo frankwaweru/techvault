@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechVault — Premium Electronics</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #080A0E;
+    --deep: #0D1117;
+    --surface: #13181F;
+    --card: #181E27;
+    --line: #1E2633;
+    --blue: #1C7EF5;
+    --blue-glow: #1C7EF530;
+    --blue-light: #5BA3F8;
+    --cyan: #00D4FF;
+    --white: #F0F4FC;
+    --muted: #6B7A90;
+    --dim: #3A4558;
+    --danger: #FF4D6A;
+    --gold: #F0A832;
+    --green: #00C97A;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px;
+    height: 64px;
+    background: rgba(8,10,14,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--white);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo span {
+    color: var(--blue);
+  }
+
+  .nav-links {
+    display: flex; gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--white); }
+  .nav-links a.active { color: var(--blue-light); }
+
+  .nav-right {
+    display: flex; align-items: center; gap: 16px;
+  }
+
+  .search-bar {
+    display: flex; align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0 14px;
+    gap: 8px;
+    height: 38px;
+    transition: border-color 0.2s;
+  }
+
+  .search-bar:focus-within {
+    border-color: var(--blue);
+  }
+
+  .search-bar svg { color: var(--muted); flex-shrink: 0; }
+
+  .search-bar input {
+    background: none; border: none; outline: none;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    width: 180px;
+  }
+
+  .search-bar input::placeholder { color: var(--dim); }
+
+  .icon-btn {
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+
+  .icon-btn:hover { border-color: var(--blue); background: var(--card); }
+
+  .badge {
+    position: absolute; top: -4px; right: -4px;
+    width: 16px; height: 16px;
+    background: var(--blue);
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    border: 2px solid var(--black);
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: calc(100vh - 64px);
+    max-height: 720px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse 60% 80% at 70% 50%, rgba(28,126,245,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-content {
+    display: flex; flex-direction: column;
+    justify-content: center;
+    padding: 80px 48px 80px 72px;
+    position: relative; z-index: 2;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--blue-light);
+    margin-bottom: 24px;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    display: block;
+    width: 24px; height: 1px;
+    background: var(--blue);
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(56px, 7vw, 88px);
+    line-height: 0.95;
+    letter-spacing: 1px;
+    color: var(--white);
+    margin-bottom: 24px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--blue);
+    display: block;
+  }
+
+  .hero-desc {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 420px;
+    margin-bottom: 40px;
+  }
+
+  .hero-actions {
+    display: flex; gap: 12px; align-items: center;
+  }
+
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 28px;
+    background: var(--blue);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border: none; border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.1s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 24px;
+    background: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .btn-ghost:hover { color: var(--white); border-color: var(--dim); }
+
+  .hero-stats {
+    display: flex; gap: 40px;
+    margin-top: 52px;
+    padding-top: 36px;
+    border-top: 1px solid var(--line);
+  }
+
+  .stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 1px;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .stat-val span { color: var(--blue); }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 0.3px;
+  }
+
+  .hero-visual {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+
+  .hero-visual::before {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(28,126,245,0.12) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .hero-product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.9;
+  }
+
+  .hero-product-card {
+    position: absolute; bottom: 40px; left: -24px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px;
+    backdrop-filter: blur(10px);
+    animation: float 4s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .hero-product-thumb {
+    width: 48px; height: 48px;
+    background: var(--surface);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+
+  .hero-product-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .hero-product-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--blue-light);
+    margin-top: 2px;
+  }
+
+  /* ─── SECTION COMMON ─── */
+  section { padding: 80px 72px; }
+
+  .section-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 48px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 1px;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .section-sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .section-link {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--blue-light);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 6px;
+    transition: gap 0.2s;
+  }
+
+  .section-link:hover { gap: 10px; }
+
+  /* ─── CATEGORIES ─── */
+  .categories { padding: 48px 72px; background: var(--deep); }
+
+  .cat-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+  }
+
+  .cat-item {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 10px;
+    padding: 20px 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+    text-decoration: none;
+  }
+
+  .cat-item:hover {
+    border-color: var(--blue);
+    background: var(--card);
+    transform: translateY(-2px);
+  }
+
+  .cat-item.active {
+    border-color: var(--blue);
+    background: rgba(28,126,245,0.08);
+  }
+
+  .cat-icon {
+    width: 48px; height: 48px;
+    background: var(--card);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+
+  .cat-item.active .cat-icon {
+    background: rgba(28,126,245,0.15);
+  }
+
+  .cat-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .cat-item.active .cat-name { color: var(--blue-light); }
+  .cat-item:hover .cat-name { color: var(--white); }
+
+  .cat-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+  }
+
+  .cat-item.active .cat-badge { color: var(--blue); }
+
+  .cat-soon {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(240,168,50,0.1);
+    border: 1px solid rgba(240,168,50,0.25);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  /* ─── PRODUCT GRID ─── */
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+
+  .product-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    position: relative;
+  }
+
+  .product-card:hover {
+    border-color: rgba(28,126,245,0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(28,126,245,0.1);
+  }
+
+  .product-badge {
+    position: absolute; top: 14px; left: 14px; z-index: 2;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+
+  .badge-new { background: rgba(28,126,245,0.2); color: var(--blue-light); border: 1px solid rgba(28,126,245,0.3); }
+  .badge-hot { background: rgba(255,77,106,0.15); color: #FF7A90; border: 1px solid rgba(255,77,106,0.3); }
+  .badge-sale { background: rgba(0,201,122,0.15); color: #33DDA1; border: 1px solid rgba(0,201,122,0.3); }
+
+  .wishlist-btn {
+    position: absolute; top: 12px; right: 12px; z-index: 2;
+    width: 32px; height: 32px;
+    background: rgba(13,17,23,0.7);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    font-size: 14px;
+  }
+
+  .wishlist-btn:hover { background: rgba(255,77,106,0.15); border-color: var(--danger); }
+
+  .product-img-wrap {
+    height: 200px;
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 72px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .product-img-wrap::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: linear-gradient(to top, var(--card), transparent);
+  }
+
+  .product-body {
+    padding: 20px;
+  }
+
+  .product-brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 6px;
+  }
+
+  .product-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .product-spec {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  .product-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+
+  .product-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--white);
+  }
+
+  .product-price .old {
+    font-size: 12px;
+    color: var(--dim);
+    text-decoration: line-through;
+    display: block;
+    margin-bottom: -2px;
+  }
+
+  .stars {
+    display: flex; align-items: center; gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .star { color: var(--gold); font-size: 12px; }
+  .star-empty { color: var(--dim); font-size: 12px; }
+
+  .rating-count { font-size: 12px; color: var(--muted); margin-left: 4px; }
+
+  .add-cart-btn {
+    width: 36px; height: 36px;
+    background: var(--blue);
+    border: none; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    font-size: 16px;
+    color: white;
+  }
+
+  .add-cart-btn:hover { opacity: 0.85; transform: scale(1.05); }
+  .add-cart-btn:active { transform: scale(0.97); }
+
+  /* ─── BANNER ─── */
+  .promo-banner {
+    margin: 0 72px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    position: relative;
+  }
+
+  .promo-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 40% 100% at 0% 50%, rgba(28,126,245,0.1) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .promo-content {
+    padding: 48px 56px;
+    position: relative; z-index: 1;
+  }
+
+  .promo-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .promo-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    letter-spacing: 1px;
+    line-height: 0.95;
+    color: var(--white);
+    margin-bottom: 16px;
+  }
+
+  .promo-title em { font-style: normal; color: var(--blue); }
+
+  .promo-desc {
+    font-size: 15px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    max-width: 400px;
+    line-height: 1.6;
+  }
+
+  .promo-visual {
+    width: 320px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 120px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ─── COMING SOON ─── */
+  .coming-soon { background: var(--deep); }
+
+  .soon-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .soon-card {
+    background: var(--surface);
+    border: 1px dashed var(--dim);
+    border-radius: 16px;
+    padding: 36px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .soon-card::before {
+    content: 'COMING SOON';
+    position: absolute; top: 14px; right: -22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    color: var(--gold);
+    background: rgba(240,168,50,0.12);
+    border: 1px solid rgba(240,168,50,0.2);
+    padding: 3px 10px;
+    transform: rotate(35deg);
+    transform-origin: center;
+    width: 110px;
+    text-align: center;
+  }
+
+  .soon-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+    display: block;
+  }
+
+  .soon-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .soon-desc {
+    font-size: 12px;
+    color: var(--dim);
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .notify-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .notify-btn:hover { color: var(--blue-light); border-color: rgba(28,126,245,0.4); }
+
+  /* ─── FEATURES STRIP ─── */
+  .features-strip {
+    padding: 48px 72px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+
+  .feature-item {
+    display: flex; align-items: flex-start; gap: 16px;
+  }
+
+  .feature-icon {
+    width: 44px; height: 44px;
+    background: rgba(28,126,245,0.08);
+    border: 1px solid rgba(28,126,245,0.2);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .feature-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .feature-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--deep);
+    border-top: 1px solid var(--line);
+    padding: 60px 72px 36px;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 48px;
+  }
+
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 2px;
+    color: var(--white);
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .footer-logo span { color: var(--blue); }
+
+  .footer-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 20px;
+    max-width: 260px;
+  }
+
+  .footer-social { display: flex; gap: 10px; }
+
+  .social-btn {
+    width: 34px; height: 34px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .social-btn:hover { border-color: var(--blue); }
+
+  .footer-heading {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .footer-links { list-style: none; }
+
+  .footer-links li { margin-bottom: 10px; }
+
+  .footer-links a {
+    text-decoration: none;
+    font-size: 14px;
+    color: var(--dim);
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--white); }
+
+  .footer-bottom {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+
+  .footer-copy {
+    font-size: 13px;
+    color: var(--dim);
+  }
+
+  .footer-legal {
+    display: flex; gap: 24px;
+  }
+
+  .footer-legal a {
+    font-size: 13px;
+    color: var(--dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-legal a:hover { color: var(--muted); }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--card);
+    border: 1px solid rgba(0,201,122,0.4);
+    border-radius: 10px;
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--white);
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-icon { color: var(--green); font-size: 16px; }
+
+  /* scroll animations */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">Tech<span>Vault</span></a>
+  <ul class="nav-links">
+    <li><a href="#" class="active">Home</a></li>
+    <li><a href="#laptops">Laptops</a></li>
+    <li><a href="#phones">Phones</a></li>
+    <li><a href="#coming-soon">More</a></li>
+    <li><a href="#deals">Deals</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="search-bar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search products…">
+    </div>
+    <div class="icon-btn" title="Wishlist">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7A90" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </div>
+    <div class="icon-btn" title="Cart" id="cart-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7A90" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span class="badge" id="cart-count">0</span>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow">New Arrivals 2025</div>
+    <h1>Next-Gen<em>Electronics</em>Await You</h1>
+    <p class="hero-desc">Discover the latest laptops, smartphones, and cutting-edge tech—curated for performance, style, and real-world power.</p>
+    <div class="hero-actions">
+      <a href="#laptops" class="btn-primary">
+        Shop Now
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
+      <a href="#coming-soon" class="btn-ghost">Coming Soon</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-val">500<span>+</span></div>
+        <div class="stat-label">Products Listed</div>
+      </div>
+      <div>
+        <div class="stat-val">48<span>K</span></div>
+        <div class="stat-label">Happy Customers</div>
+      </div>
+      <div>
+        <div class="stat-val">4.9<span>★</span></div>
+        <div class="stat-label">Average Rating</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div style="font-size: 220px; opacity: 0.18; user-select:none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);">💻</div>
+    <div style="font-size: 130px; z-index: 1; filter: drop-shadow(0 24px 48px rgba(28,126,245,0.3)); animation: float 5s ease-in-out infinite;">💻</div>
+    <div class="hero-product-card">
+      <div class="hero-product-thumb">💻</div>
+      <div>
+        <div class="hero-product-name">MacBook Pro M4</div>
+        <div class="hero-product-price">KSh 189,000</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<div class="categories">
+  <div class="cat-grid">
+    <a href="#laptops" class="cat-item active">
+      <div class="cat-icon">💻</div>
+      <div class="cat-name">Laptops</div>
+      <div class="cat-badge">24 items</div>
+    </a>
+    <a href="#phones" class="cat-item">
+      <div class="cat-icon">📱</div>
+      <div class="cat-name">Phones</div>
+      <div class="cat-badge">32 items</div>
+    </a>
+    <a href="#coming-soon" class="cat-item">
+      <div class="cat-icon">🎧</div>
+      <div class="cat-name">Audio</div>
+      <span class="cat-soon">Soon</span>
+    </a>
+    <a href="#coming-soon" class="cat-item">
+      <div class="cat-icon">⌚</div>
+      <div class="cat-name">Wearables</div>
+      <span class="cat-soon">Soon</span>
+    </a>
+    <a href="#coming-soon" class="cat-item">
+      <div class="cat-icon">🖥️</div>
+      <div class="cat-name">Monitors</div>
+      <span class="cat-soon">Soon</span>
+    </a>
+    <a href="#coming-soon" class="cat-item">
+      <div class="cat-icon">🎮</div>
+      <div class="cat-name">Gaming</div>
+      <span class="cat-soon">Soon</span>
+    </a>
+  </div>
+</div>
+
+<!-- LAPTOPS -->
+<section id="laptops">
+  <div class="section-header fade-up">
+    <div>
+      <div class="section-title">Laptops</div>
+      <div class="section-sub">Powerful machines for creators, professionals & students</div>
+    </div>
+    <a href="#" class="section-link">View all laptops →</a>
+  </div>
+  <div class="product-grid">
+
+    <div class="product-card fade-up">
+      <span class="product-badge badge-new">New</span>
+      <div class="wishlist-btn">♡</div>
+      <div class="product-img-wrap">💻</div>
+      <div class="product-body">
+        <div class="product-brand">Apple</div>
+        <div class="product-name">MacBook Pro 14" M4 Pro</div>
+        <div class="stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          <span class="rating-count">(248)</span>
+        </div>
+        <div class="product-spec">M4 Pro chip · 18GB RAM · 512GB SSD · 14.2" Liquid Retina XDR</div>
+        <div class="product-footer">
+          <div class="product-price">KSh 189,000</div>
+          <button class="add-cart-btn" onclick="addToCart('MacBook Pro M4')">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card fade-up">
+      <span class="product-badge badge-hot">Hot</span>
+      <div class="wishlist-btn">♡</div>
+      <div class="product-img-wrap">💻</div>
+      <div class="product-body">
+        <div class="product-brand">Dell</div>
+        <div class="product-name">XPS 15 OLED 2025</div>
+        <div class="stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star-empty">★</span>
+          <span class="rating-count">(184)</span>
+        </div>
+        <div class="product-spec">Intel Core Ultra 9 · 32GB RAM · 1TB SSD · 15.6" OLED Touch</div>
+        <div class="product-footer">
+          <div class="product-price">
+            <span class="old">KSh 168,000</span>
+            KSh 145,000
+          </div>
+          <button class="add-cart-btn" onclick="addToCart('Dell XPS 15')">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card fade-up">
+      <span class="product-badge badge-sale">–15%</span>
+      <div class="wishlist-btn">♡</div>
+      <div class="product-img-wrap">💻</div>
+      <div class="product-body">
+        <div class="product-brand">Lenovo</div>
+        <div class="product-name">ThinkPad X1 Carbon Gen 12</div>
+        <div class="stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          <span class="rating-count">(312)</span>
+        </div>
+        <div class="product-spec">Intel Core Ultra 7 · 16GB RAM · 512GB SSD · 14" IPS Anti-glare</div>
+        <div class="product-footer">
+          <div class="product-price">
+            <span class="old">KSh 138,000</span>
+            KSh 117,000
+          </div>
+          <button class="add-cart-btn" onclick="addToCart('ThinkPad X1 Carbon')">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card fade-up">
+      <div class="wishlist-btn">♡</div>
+      <div class="product-img-wrap">💻</div>
+      <div class="product-body">
+        <div class="product-brand">ASUS</div>
+        <div class="product-name">ROG Zephyrus G16</div>
+        <div class="stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star-empty">★</span>
+          <span class="rating-count">(97)</span>
+        </div>
+        <div class="product-spec">AMD Ryzen 9 · 32GB RAM · RTX 4080 · 16" 240Hz OLED</div>
+        <div class="product-footer">
+          <div class="product-price">KSh 228,000</div>
+          <button class="add-cart-btn" onclick="addToCart('ROG Zephyrus G16')">+</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PROMO BANNER -->
+<div class="promo-banner">
+  <div class="promo-content">
+    <div class="promo-eyebrow">
+      <span>⚡</span> Limited Time Offer
+    </div>
+    <div class="promo-title">Trade In<br><em>Save Big</em></div>
+    <p class="promo-desc">Trade in your old device and get up to KSh 40,000 off your next purchase. Fast valuation, instant credit.</p>
+    <a href="#" class="btn-primary">Get Trade-In Value →</a>
+  </div>
+  <div class="promo-visual">📲</div>
+</div>
+
+<!-- PHONES -->
+<section id="phones">
+  <div class="section-header fade-up">
+    <div>
+      <div class="section-title">Smartphones</div>
+      <div class="section-sub">Latest flagships and best-value picks</div>
+    </div>
+    <a href="#" class="section-link">View all phones →</a>
+  </div>
+  <div class="product-grid">
+
+    <div class="product-card fade-up">
+      <span class="product-badge badge-new">New</span>
+      <div class="wishlist-btn">♡</div>
+      <div class="product-img-wrap">📱</div>
+      <div class="product-body">
+        <div class="product-brand">Apple</div>
+        <div class="product-name">iPhone 17 Pro Max</div>
+        <div class="stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          <span class="rating-count">(1.2K)</span>
+        </div>
+        <div class="product-spec">A19 Pro chip · 256GB · 6.9" ProMotion · Titanium · 4K 120fps</div>
+        <div class="product-footer">
+          <div class="product-price">KSh 162,000</div>
+          <button class="add-cart-btn" onclick="addToCart('iPhone 17 Pro Max')">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card fade-up">
+      <span class="product-badge badge-hot">Hot</span>
+      <div class="wishlist-btn">♡</div>
+      <div class="product-img-wrap">📱</div>
+      <div class="product-body">
+        <div class="product-brand">Samsung</div>
+        <div class="product-name">Galaxy S25 Ultra</div>
+        <div class="stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          <span class="rating-count">(876)</span>
+        </div>
+        <div class="product-spec">Snapdragon 8 Elite · 512GB · S Pen · 6.9" QHD+ 120Hz</div>
+        <div class="product-footer">
+          <div class="product-price">KSh 148,000</div>
+          <button class="add-cart-btn" onclick="addToCart('Galaxy S25 Ultra')">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card fade-up">
+      <span class="product-badge badge-sale">–20%</span>
+      <div class="wishlist-btn">♡</div>
+      <div class="product-img-wrap">📱</div>
+      <div class="product-body">
+        <div class="product-brand">Google</div>
+        <div class="product-name">Pixel 9 Pro XL</div>
+        <div class="stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star-empty">★</span>
+          <span class="rating-count">(432)</span>
+        </div>
+        <div class="product-spec">Tensor G4 · 256GB · AI camera · 6.8" LTPO OLED 120Hz</div>
+        <div class="product-footer">
+          <div class="product-price">
+            <span class="old">KSh 110,000</span>
+            KSh 88,000
+          </div>
+          <button class="add-cart-btn" onclick="addToCart('Pixel 9 Pro XL')">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card fade-up">
+      <div class="wishlist-btn">♡</div>
+      <div class="product-img-wrap">📱</div>
+      <div class="product-body">
+        <div class="product-brand">OnePlus</div>
+        <div class="product-name">OnePlus 13 5G</div>
+        <div class="stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star-empty">★</span>
+          <span class="rating-count">(290)</span>
+        </div>
+        <div class="product-spec">Snapdragon 8 Elite · 256GB · 100W fast charge · 6.82" AMOLED</div>
+        <div class="product-footer">
+          <div class="product-price">KSh 72,000</div>
+          <button class="add-cart-btn" onclick="addToCart('OnePlus 13')">+</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- COMING SOON -->
+<section id="coming-soon" class="coming-soon">
+  <div class="section-header fade-up">
+    <div>
+      <div class="section-title">More Products</div>
+      <div class="section-sub">Expanding our catalogue — stay tuned</div>
+    </div>
+  </div>
+  <div class="soon-grid">
+    <div class="soon-card fade-up">
+      <span class="soon-icon">🎧</span>
+      <div class="soon-name">Audio & Headphones</div>
+      <div class="soon-desc">ANC headphones, earbuds, speakers, and hi-fi audio gear.</div>
+      <button class="notify-btn" onclick="notifyMe('Audio')">🔔 Notify Me</button>
+    </div>
+    <div class="soon-card fade-up">
+      <span class="soon-icon">⌚</span>
+      <div class="soon-name">Wearables</div>
+      <div class="soon-desc">Smartwatches, fitness trackers, and AR glasses.</div>
+      <button class="notify-btn" onclick="notifyMe('Wearables')">🔔 Notify Me</button>
+    </div>
+    <div class="soon-card fade-up">
+      <span class="soon-icon">🖥️</span>
+      <div class="soon-name">Monitors & Displays</div>
+      <div class="soon-desc">4K, OLED and ultra-wide monitors for work and gaming.</div>
+      <button class="notify-btn" onclick="notifyMe('Monitors')">🔔 Notify Me</button>
+    </div>
+    <div class="soon-card fade-up">
+      <span class="soon-icon">🎮</span>
+      <div class="soon-name">Gaming</div>
+      <div class="soon-desc">Consoles, controllers, gaming accessories & peripherals.</div>
+      <button class="notify-btn" onclick="notifyMe('Gaming')">🔔 Notify Me</button>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES STRIP -->
+<div class="features-strip">
+  <div class="feature-item fade-up">
+    <div class="feature-icon">🚚</div>
+    <div>
+      <div class="feature-title">Free Delivery</div>
+      <div class="feature-desc">Free shipping on all orders over KSh 5,000 across Kenya.</div>
+    </div>
+  </div>
+  <div class="feature-item fade-up">
+    <div class="feature-icon">🔄</div>
+    <div>
+      <div class="feature-title">14-Day Returns</div>
+      <div class="feature-desc">Hassle-free returns and exchanges within 14 days.</div>
+    </div>
+  </div>
+  <div class="feature-item fade-up">
+    <div class="feature-icon">🔒</div>
+    <div>
+      <div class="feature-title">Secure Payments</div>
+      <div class="feature-desc">M-Pesa, Visa, Mastercard & bank transfer supported.</div>
+    </div>
+  </div>
+  <div class="feature-item fade-up">
+    <div class="feature-icon">🛠️</div>
+    <div>
+      <div class="feature-title">Warranty Cover</div>
+      <div class="feature-desc">All products come with official manufacturer warranty.</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <span class="footer-logo">Tech<span>Vault</span></span>
+      <p class="footer-desc">Your trusted destination for premium electronics in Kenya. Quality products, honest prices, real service.</p>
+      <div class="footer-social">
+        <div class="social-btn">𝕏</div>
+        <div class="social-btn">f</div>
+        <div class="social-btn">in</div>
+        <div class="social-btn">▶</div>
+      </div>
+    </div>
+    <div>
+      <div class="footer-heading">Shop</div>
+      <ul class="footer-links">
+        <li><a href="#">Laptops</a></li>
+        <li><a href="#">Smartphones</a></li>
+        <li><a href="#">Deals & Offers</a></li>
+        <li><a href="#">New Arrivals</a></li>
+        <li><a href="#">Coming Soon</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-heading">Support</div>
+      <ul class="footer-links">
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Track Order</a></li>
+        <li><a href="#">Returns</a></li>
+        <li><a href="#">Warranty</a></li>
+        <li><a href="#">Contact Us</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-heading">Company</div>
+      <ul class="footer-links">
+        <li><a href="#">About TechVault</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Press</a></li>
+        <li><a href="#">Partners</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 TechVault Kenya. All rights reserved.</div>
+    <div class="footer-legal">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">Cookie Settings</a>
+    </div>
+  </div>
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✓</span>
+  <span id="toast-msg">Added to cart!</span>
+</div>
+
+<script>
+  let cartCount = 0;
+
+  function addToCart(name) {
+    cartCount++;
+    document.getElementById('cart-count').textContent = cartCount;
+    showToast(name + ' added to cart');
+  }
+
+  function notifyMe(cat) {
+    showToast('You\'ll be notified when ' + cat + ' launches!');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // Scroll fade-up
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 60);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+
+  // Category switcher
+  document.querySelectorAll('.cat-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+      document.querySelectorAll('.cat-item').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
