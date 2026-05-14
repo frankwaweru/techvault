@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechVault — Firebase Setup Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #080A0E; --deep: #0D1117; --surface: #13181F; --card: #181E27;
+    --line: #1E2633; --blue: #1C7EF5; --blue-light: #5BA3F8;
+    --blue-glow: rgba(28,126,245,0.12); --white: #F0F4FC; --muted: #6B7A90;
+    --dim: #3A4558; --green: #00C97A; --gold: #F0A832; --orange: #FF8A3D;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--black); color:var(--white); min-height:100vh; }
+
+  nav {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 48px; height:64px;
+    background:rgba(8,10,14,0.95); border-bottom:1px solid var(--line);
+    position:sticky; top:0; z-index:10; backdrop-filter:blur(12px);
+  }
+  .logo { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:2px; text-decoration:none; color:var(--white); }
+  .logo span { color:var(--blue); }
+  .nav-links { display:flex; gap:12px; }
+  .nav-link { padding:8px 16px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:500; color:var(--muted); border:1px solid var(--line); transition:all .2s; }
+  .nav-link:hover { color:var(--white); border-color:var(--dim); }
+  .nav-link.active { color:var(--blue-light); background:var(--blue-glow); border-color:rgba(28,126,245,.3); }
+
+  .hero {
+    text-align:center; padding:80px 48px 60px;
+    background:radial-gradient(ellipse 60% 40% at 50% 0%, rgba(28,126,245,.08) 0%, transparent 70%);
+    border-bottom:1px solid var(--line);
+  }
+  .hero-eyebrow {
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono',monospace; font-size:11px;
+    letter-spacing:2px; text-transform:uppercase; color:var(--blue-light);
+    margin-bottom:20px;
+  }
+  .hero h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(48px,6vw,72px); letter-spacing:1px; line-height:1; margin-bottom:16px; }
+  .hero h1 em { font-style:normal; color:var(--blue); }
+  .hero p { font-size:16px; color:var(--muted); max-width:520px; margin:0 auto 32px; line-height:1.7; }
+
+  .time-estimate {
+    display:inline-flex; align-items:center; gap:24px;
+    background:var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:14px 28px;
+  }
+  .time-item { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); }
+  .time-item strong { color:var(--white); }
+  .time-divider { width:1px; height:20px; background:var(--line); }
+
+  .content { max-width:860px; margin:0 auto; padding:64px 24px; }
+
+  .section-label {
+    font-family:'JetBrains Mono',monospace; font-size:11px;
+    letter-spacing:2px; text-transform:uppercase; color:var(--blue);
+    margin-bottom:32px; display:flex; align-items:center; gap:12px;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--line); }
+
+  .step {
+    display:grid; grid-template-columns:60px 1fr;
+    gap:0 24px; margin-bottom:40px; position:relative;
+  }
+  .step:not(:last-child)::before {
+    content:''; position:absolute;
+    left:29px; top:60px; bottom:-40px;
+    width:2px; background:linear-gradient(to bottom, var(--line), transparent);
+  }
+  .step-num {
+    width:60px; height:60px;
+    background:var(--card); border:1px solid var(--line);
+    border-radius:14px; display:flex; align-items:center; justify-content:center;
+    font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--blue);
+    flex-shrink:0; position:relative; z-index:1;
+  }
+  .step.done .step-num { background:rgba(0,201,122,.1); border-color:rgba(0,201,122,.3); color:var(--green); }
+  .step-body { padding-top:12px; }
+  .step-title { font-size:18px; font-weight:600; color:var(--white); margin-bottom:8px; }
+  .step-desc { font-size:14px; color:var(--muted); line-height:1.7; margin-bottom:16px; }
+
+  .step-card {
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:12px; padding:20px 24px; margin-bottom:12px;
+  }
+  .step-card.highlight { border-color:rgba(28,126,245,.3); background:var(--blue-glow); }
+
+  code {
+    font-family:'JetBrains Mono',monospace; font-size:13px;
+    background:rgba(0,0,0,.4); border:1px solid var(--line);
+    border-radius:6px; padding:2px 8px; color:var(--blue-light);
+  }
+  pre {
+    font-family:'JetBrains Mono',monospace; font-size:12px;
+    background:var(--deep); border:1px solid var(--line);
+    border-radius:10px; padding:20px; line-height:1.7;
+    color:#A8C4E0; overflow-x:auto; position:relative;
+  }
+  pre .comment { color:var(--dim); }
+  pre .key { color:var(--blue-light); }
+  pre .val { color:var(--green); }
+  pre .str { color:var(--gold); }
+
+  .copy-btn {
+    position:absolute; top:12px; right:12px;
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:6px; padding:4px 10px;
+    font-family:'DM Sans',sans-serif; font-size:11px; font-weight:500;
+    color:var(--muted); cursor:pointer; transition:all .2s;
+  }
+  .copy-btn:hover { color:var(--white); border-color:var(--dim); }
+
+  .pill-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .pill {
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--card); border:1px solid var(--line);
+    border-radius:8px; padding:6px 14px;
+    font-size:13px; color:var(--muted);
+  }
+  .pill .dot { width:6px; height:6px; border-radius:50%; background:var(--green); }
+  .pill.warn .dot { background:var(--gold); }
+
+  .rules-box {
+    background:var(--deep); border:1px solid var(--line);
+    border-radius:10px; overflow:hidden; margin-top:12px;
+  }
+  .rules-tab {
+    display:flex; border-bottom:1px solid var(--line);
+    background:var(--surface);
+  }
+  .rules-tab span {
+    padding:8px 16px; font-size:12px; font-weight:500;
+    color:var(--muted); border-right:1px solid var(--line);
+    cursor:pointer;
+  }
+  .rules-tab span.active { color:var(--blue-light); background:var(--blue-glow); }
+
+  .warning-box {
+    display:flex; align-items:flex-start; gap:12px;
+    background:rgba(240,168,50,.08); border:1px solid rgba(240,168,50,.25);
+    border-radius:10px; padding:16px 20px; margin-top:12px;
+  }
+  .warning-icon { font-size:18px; flex-shrink:0; margin-top:1px; }
+  .warning-text { font-size:13px; color:#D4A030; line-height:1.6; }
+
+  .success-box {
+    display:flex; align-items:flex-start; gap:12px;
+    background:rgba(0,201,122,.08); border:1px solid rgba(0,201,122,.25);
+    border-radius:10px; padding:16px 20px; margin-top:12px;
+  }
+  .success-text { font-size:13px; color:#33DDA1; line-height:1.6; }
+
+  .btn-primary {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:12px 24px; background:var(--blue); color:#fff;
+    font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
+    border:none; border-radius:8px; cursor:pointer; text-decoration:none;
+    transition:opacity .2s;
+  }
+  .btn-primary:hover { opacity:.85; }
+  .btn-ghost {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:12px 20px; background:none; color:var(--muted);
+    font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500;
+    border:1px solid var(--line); border-radius:8px; cursor:pointer;
+    text-decoration:none; transition:all .2s;
+  }
+  .btn-ghost:hover { color:var(--white); border-color:var(--dim); }
+
+  .final-card {
+    background:var(--card); border:1px solid rgba(28,126,245,.3);
+    border-radius:16px; padding:40px; text-align:center; margin-top:48px;
+    background-image:radial-gradient(ellipse 60% 60% at 50% 0%, rgba(28,126,245,.08) 0%, transparent 70%);
+  }
+  .final-card h2 { font-family:'Bebas Neue',sans-serif; font-size:36px; letter-spacing:1px; margin-bottom:12px; }
+  .final-card p { font-size:14px; color:var(--muted); margin-bottom:24px; max-width:400px; margin-left:auto; margin-right:auto; line-height:1.7; }
+  .final-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+  ::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:var(--deep); }
+  ::-webkit-scrollbar-thumb { background:var(--dim); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="index.html">Tech<span>Vault</span></a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">🏪 Store</a>
+    <a class="nav-link" href="admin.html">⚙️ Admin</a>
+    <a class="nav-link active" href="setup.html">📖 Setup Guide</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">🔥 Firebase Integration</div>
+  <h1>Connect Your <em>Database</em></h1>
+  <p>Follow these steps to connect TechVault to Firebase — free real-time database and image storage that works across all devices.</p>
+  <div class="time-estimate">
+    <div class="time-item"><span>⏱️</span> <strong>~10 min</strong> to complete</div>
+    <div class="time-divider"></div>
+    <div class="time-item"><span>💳</span> <strong>Free</strong> Firebase tier</div>
+    <div class="time-divider"></div>
+    <div class="time-item"><span>🌍</span> <strong>Real-time</strong> across devices</div>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="section-label">Firebase Project Setup</div>
+
+  <!-- STEP 1 -->
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-title">Create a Firebase Project</div>
+      <div class="step-desc">Go to the Firebase Console and create a new project for your TechVault store.</div>
+      <div class="step-card highlight">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--white);margin-bottom:4px">Firebase Console</div>
+            <div style="font-size:12px;color:var(--muted)">Sign in with your Google account</div>
+          </div>
+          <a href="https://console.firebase.google.com" target="_blank" class="btn-primary">Open Firebase Console →</a>
+        </div>
+      </div>
+      <div class="step-card">
+        <div style="font-size:13px;color:var(--muted);line-height:1.8">
+          1. Click <strong style="color:var(--white)">Add project</strong><br>
+          2. Enter project name e.g. <code>techvault-store</code><br>
+          3. Disable Google Analytics (not needed)<br>
+          4. Click <strong style="color:var(--white)">Create project</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-title">Register a Web App &amp; Get Your Config</div>
+      <div class="step-desc">Add a web app to get the Firebase config credentials you'll paste into your HTML files.</div>
+      <div class="step-card">
+        <div style="font-size:13px;color:var(--muted);line-height:1.8">
+          1. In your project dashboard, click the <strong style="color:var(--white)">&lt;/&gt;</strong> (Web) icon<br>
+          2. Enter app nickname: <code>TechVault Web</code><br>
+          3. Leave "Firebase Hosting" unchecked<br>
+          4. Click <strong style="color:var(--white)">Register app</strong><br>
+          5. You'll see a config object — copy it
+        </div>
+      </div>
+      <div style="margin-top:12px;position:relative">
+        <pre><span class="comment">// Your config will look like this — copy YOUR actual values:</span>
+const firebaseConfig = {
+  <span class="key">apiKey</span>: <span class="str">"AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"</span>,
+  <span class="key">authDomain</span>: <span class="str">"your-project.firebaseapp.com"</span>,
+  <span class="key">projectId</span>: <span class="str">"your-project-id"</span>,
+  <span class="key">storageBucket</span>: <span class="str">"your-project.appspot.com"</span>,
+  <span class="key">messagingSenderId</span>: <span class="str">"123456789"</span>,
+  <span class="key">appId</span>: <span class="str">"1:123456789:web:abcdef123456"</span>
+};</pre>
+        <div class="warning-box">
+          <div class="warning-icon">⚠️</div>
+          <div class="warning-text">Paste your real values into the <code>firebaseConfig</code> block at the top of both <strong>admin.html</strong> and <strong>index.html</strong>. Replace every placeholder value.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-title">Enable Firestore Database</div>
+      <div class="step-desc">Firestore stores your product names, prices, descriptions and image URLs in real-time.</div>
+      <div class="step-card">
+        <div style="font-size:13px;color:var(--muted);line-height:1.8">
+          1. In the left sidebar click <strong style="color:var(--white)">Build → Firestore Database</strong><br>
+          2. Click <strong style="color:var(--white)">Create database</strong><br>
+          3. Choose <strong style="color:var(--white)">Start in test mode</strong> (you'll secure it in Step 5)<br>
+          4. Select a location closest to Kenya — choose <code>europe-west1</code> or <code>us-central1</code><br>
+          5. Click <strong style="color:var(--white)">Enable</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <div class="step-title">Enable Firebase Storage</div>
+      <div class="step-desc">Storage holds your product images so they load fast from a CDN globally.</div>
+      <div class="step-card">
+        <div style="font-size:13px;color:var(--muted);line-height:1.8">
+          1. In the left sidebar click <strong style="color:var(--white)">Build → Storage</strong><br>
+          2. Click <strong style="color:var(--white)">Get started</strong><br>
+          3. Choose <strong style="color:var(--white)">Start in test mode</strong><br>
+          4. Select the same location as Firestore<br>
+          5. Click <strong style="color:var(--white)">Done</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <div class="step-title">Set Security Rules</div>
+      <div class="step-desc">Allow the store to read products publicly, while keeping write access open for now. You can add admin authentication later.</div>
+
+      <div class="rules-box">
+        <div class="rules-tab">
+          <span class="active">Firestore Rules</span>
+        </div>
+        <div style="position:relative">
+          <pre><span class="comment">// Firestore Database → Rules tab → paste this:</span>
+rules_version = <span class="str">'2'</span>;
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /products/{document=**} {
+      <span class="comment">// Anyone can read (store visitors)</span>
+      allow read: if <span class="val">true</span>;
+      <span class="comment">// Only allow writes from your IP or add auth later</span>
+      allow write: if <span class="val">true</span>;
+    }
+  }
+}</pre>
+          <button class="copy-btn" onclick="copyText(this, `rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /products/{document=**} {\n      allow read: if true;\n      allow write: if true;\n    }\n  }\n}`)">Copy</button>
+        </div>
+      </div>
+
+      <div class="rules-box" style="margin-top:12px">
+        <div class="rules-tab">
+          <span class="active">Storage Rules</span>
+        </div>
+        <div style="position:relative">
+          <pre><span class="comment">// Storage → Rules tab → paste this:</span>
+rules_version = <span class="str">'2'</span>;
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read: if <span class="val">true</span>;
+      allow write: if <span class="val">true</span>;
+    }
+  }
+}</pre>
+          <button class="copy-btn" onclick="copyText(this, `rules_version = '2';\nservice firebase.storage {\n  match /b/{bucket}/o {\n    match /{allPaths=**} {\n      allow read: if true;\n      allow write: if true;\n    }\n  }\n}`)">Copy</button>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <div class="warning-icon">⚠️</div>
+        <div class="warning-text"><strong>For launch:</strong> these open rules are fine to get started. Before going fully public, add Firebase Authentication to your admin panel so only you can write. This guide will cover that in a future step.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 6 -->
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-body">
+      <div class="step-title">Paste Your Config Into Both Files</div>
+      <div class="step-desc">Open <code>admin.html</code> and <code>index.html</code> in any text editor. Find the <code>firebaseConfig</code> block near the top and replace the placeholder values with your real credentials.</div>
+      <div class="step-card">
+        <div style="font-size:13px;color:var(--muted);line-height:1.8">
+          Look for this comment in both files:<br>
+          <code>// ✏️ PASTE YOUR FIREBASE CONFIG HERE</code><br><br>
+          Replace the entire <code>firebaseConfig = { ... }</code> object with the one from Firebase Console.<br>
+          Do this in <strong style="color:var(--white)">both admin.html and index.html</strong>.
+        </div>
+      </div>
+      <div class="success-box">
+        <div style="font-size:18px">✅</div>
+        <div class="success-text">Once your config is pasted, open <strong>admin.html</strong> in your browser, add a product, then open <strong>index.html</strong> — it should appear immediately on the store!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 7 -->
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-body">
+      <div class="step-title">Deploy to GitHub Pages</div>
+      <div class="step-desc">Push all 3 files to your GitHub repo. Firebase works perfectly on GitHub Pages.</div>
+      <div class="pill-row">
+        <div class="pill"><div class="dot"></div> index.html — store</div>
+        <div class="pill"><div class="dot"></div> admin.html — admin panel</div>
+        <div class="pill"><div class="dot"></div> setup.html — this guide</div>
+      </div>
+      <div class="step-card" style="margin-top:12px">
+        <div style="font-size:13px;color:var(--muted);line-height:1.8">
+          GitHub Pages URL pattern:<br>
+          🏪 Store: <code>https://username.github.io/techvault/</code><br>
+          ⚙️ Admin: <code>https://username.github.io/techvault/admin.html</code>
+        </div>
+      </div>
+      <div class="warning-box">
+        <div class="warning-icon">💡</div>
+        <div class="warning-text">Add your GitHub Pages domain to Firebase's Authorized Domains: <strong>Firebase Console → Authentication → Settings → Authorized domains → Add domain</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="final-card">
+    <div style="font-size:48px;margin-bottom:16px">🎉</div>
+    <h2>You're All Set!</h2>
+    <p>Your TechVault store is now connected to Firebase. Products you add in the admin panel appear on the store in real-time across all devices.</p>
+    <div class="final-actions">
+      <a href="admin.html" class="btn-primary">⚙️ Open Admin Panel</a>
+      <a href="index.html" class="btn-ghost">🏪 View Store</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function copyText(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.textContent = 'Copy'; btn.style.color = ''; }, 2000);
+  });
+}
+</script>
+</body>
+</html>
