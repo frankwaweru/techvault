@@ -463,16 +463,21 @@ let pendingFile = { add: null, edit: null };
 window.addEventListener('DOMContentLoaded', () => {
   if (!IS_CONFIGURED) { document.getElementById('setup-overlay').style.display='flex'; return; }
 
-  // Watch auth state — show login or dashboard
-  auth.onAuthStateChanged(user => {
+  // Watch auth state — always register UID in admins collection
+  auth.onAuthStateChanged(async user => {
     if (user) {
-      // ✅ Signed in — show dashboard
+      try {
+        await db.collection('admins').doc(user.uid).set({
+          email:     user.email,
+          role:      'admin',
+          lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      } catch(e) { console.warn('Could not register admin UID:', e.message); }
       document.getElementById('login-overlay').style.display = 'none';
       document.getElementById('auth-email-display').textContent = user.email;
       subscribeProducts();
       setupDragDrop('upload-area','img-file','add');
     } else {
-      // 🔒 Not signed in — show login
       document.getElementById('login-overlay').style.display = 'flex';
     }
   });
