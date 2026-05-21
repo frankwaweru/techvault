@@ -288,7 +288,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white)
 
 <!-- LOGIN OVERLAY -->
 <div class="login-overlay" id="login-overlay">
-  <div class="login-card">
+  <!-- Access denied message -->
+  <div id="access-denied" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    background:rgba(255,77,106,.1);border:1px solid rgba(255,77,106,.3);border-radius:16px;
+    padding:40px 48px;text-align:center;max-width:420px;width:90%;">
+    <div style="font-size:40px;margin-bottom:16px">🚫</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:#FF7A90;margin-bottom:10px">Access Denied</div>
+    <div style="font-size:14px;color:#6B7A90;line-height:1.6;margin-bottom:24px">
+      This account does not have admin privileges.<br>Please sign in with your admin credentials.
+    </div>
+    <button onclick="document.getElementById('access-denied').style.display='none'" style="padding:10px 24px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Try Again</button>
+  </div>
+  <div class="login-card" id="login-card">
     <div class="lock-icon">🔐</div>
     <div class="login-logo">Tech<span>Vault</span></div>
     <div class="login-sub">Admin access only — sign in to continue</div>
@@ -463,22 +474,32 @@ let pendingFile = { add: null, edit: null };
 window.addEventListener('DOMContentLoaded', () => {
   if (!IS_CONFIGURED) { document.getElementById('setup-overlay').style.display='flex'; return; }
 
-  // Watch auth state — always register UID in admins collection
+  // Watch auth state — only grant access if UID exists in admins collection
   auth.onAuthStateChanged(async user => {
     if (user) {
       try {
-        await db.collection('admins').doc(user.uid).set({
-          email:     user.email,
-          role:      'admin',
-          lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-      } catch(e) { console.warn('Could not register admin UID:', e.message); }
-      document.getElementById('login-overlay').style.display = 'none';
-      document.getElementById('auth-email-display').textContent = user.email;
-      subscribeProducts();
-      setupDragDrop('upload-area','img-file','add');
+        const adminDoc = await db.collection('admins').doc(user.uid).get();
+        if (adminDoc.exists) {
+          // ✅ Verified admin — show dashboard
+          await db.collection('admins').doc(user.uid).update({
+            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          document.getElementById('login-overlay').style.display = 'none';
+          document.getElementById('auth-email-display').textContent = user.email;
+          subscribeProducts();
+          setupDragDrop('upload-area','img-file','add');
+        } else {
+          // 🚫 Not an admin — sign them out and show access denied
+          await auth.signOut();
+          showAccessDenied();
+        }
+      } catch(e) {
+        await auth.signOut();
+        document.getElementById('login-overlay').style.display = 'flex';
+      }
     } else {
       document.getElementById('login-overlay').style.display = 'flex';
+      document.getElementById('access-denied').style.display = 'none';
     }
   });
 });
@@ -495,13 +516,7 @@ async function doLogin() {
   btn.disabled = true; txt.textContent = 'Signing in…';
   try {
     await auth.signInWithEmailAndPassword(email, pass);
-    // Register this user as admin in Firestore (safe to run every login)
-    await db.collection('admins').doc(cred.user.uid).set({
-      email: cred.user.email,
-      role: 'admin',
-      lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-    // onAuthStateChanged will handle the rest
+    // onAuthStateChanged will verify admin status and handle the rest
   } catch(e) {
     btn.disabled = false; txt.textContent = 'Sign In →';
     const msgs = {
@@ -513,6 +528,14 @@ async function doLogin() {
     };
     showLoginError(msgs[e.code] || 'Login failed: ' + e.message);
   }
+}
+
+function showAccessDenied() {
+  var denied = document.getElementById('access-denied');
+  var card   = document.getElementById('login-card');
+  if (denied) denied.style.display = 'block';
+  if (card)   card.style.display   = 'none';
+  document.getElementById('login-overlay').style.display = 'flex';
 }
 
 function showLoginError(msg) {
