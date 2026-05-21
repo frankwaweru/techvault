@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechVault — Premium Electronics</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+<script>
+// ================================================================
+// ✏️  PASTE YOUR FIREBASE CONFIG HERE (same as admin.html)
+// ================================================================
+const firebaseConfig = {
+  apiKey:            "AIzaSyDWidj-ZvdlQ3Ud0EWfAevWdbosmvY76nM",
+  authDomain:        "techvault-1.firebaseapp.com",
+  projectId:         "techvault-1",
+  storageBucket:     "techvault-1.firebasestorage.app",
+  messagingSenderId: "766493565374",
+  appId:             "1:766493565374:web:736d7b8acb3c2fae8059ef",
+  measurementId:     "G-2VFBBCCVQD"
+};
+// ================================================================
+
+const IS_CONFIGURED = !firebaseConfig.apiKey.includes('PASTE_YOUR');
+let db;
+if (IS_CONFIGURED) {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+}
+</script>
+<style>
+:root{
+  --black:#080A0E;--deep:#0D1117;--surface:#13181F;--card:#181E27;
+  --line:#1E2633;--blue:#1C7EF5;--blue-glow:rgba(28,126,245,.12);
+  --blue-light:#5BA3F8;--cyan:#00D4FF;--white:#F0F4FC;--muted:#6B7A90;
+  --dim:#3A4558;--danger:#FF4D6A;--gold:#F0A832;--green:#00C97A;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white);overflow-x:hidden;}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;height:64px;background:rgba(8,10,14,.92);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--white);text-decoration:none;}
+.logo span{color:var(--blue);}
+.nav-links{display:flex;gap:32px;list-style:none;}
+.nav-links a{text-decoration:none;font-size:14px;font-weight:500;color:var(--muted);letter-spacing:.5px;transition:color .2s;}
+.nav-links a:hover{color:var(--white);}
+.nav-links a.active{color:var(--blue-light);}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.search-bar{display:flex;align-items:center;background:var(--surface);border:1px solid var(--line);
+  border-radius:8px;padding:0 14px;gap:8px;height:38px;transition:border-color .2s;}
+.search-bar:focus-within{border-color:var(--blue);}
+.search-bar input{background:none;border:none;outline:none;color:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;width:180px;}
+.search-bar input::placeholder{color:var(--dim);}
+.icon-btn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+  background:var(--surface);border:1px solid var(--line);border-radius:8px;cursor:pointer;
+  transition:border-color .2s;position:relative;text-decoration:none;}
+.icon-btn:hover{border-color:var(--blue);}
+.cart-badge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:var(--blue);
+  border-radius:50%;font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;border:2px solid var(--black);}
+.admin-link{display:inline-flex;align-items:center;gap:6px;padding:0 14px;height:38px;
+  background:rgba(240,168,50,.1);border:1px solid rgba(240,168,50,.25);border-radius:8px;
+  font-size:12px;font-weight:600;color:var(--gold);text-decoration:none;transition:background .2s;}
+.admin-link:hover{background:rgba(240,168,50,.18);}
+
+/* ── HERO ── */
+.hero{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 64px);max-height:720px;overflow:hidden;position:relative;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 70% 50%,rgba(28,126,245,.07) 0%,transparent 70%);pointer-events:none;}
+.hero-content{display:flex;flex-direction:column;justify-content:center;padding:80px 48px 80px 72px;position:relative;z-index:2;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--blue-light);margin-bottom:24px;}
+.hero-eyebrow::before{content:'';display:block;width:24px;height:1px;background:var(--blue);}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,7vw,88px);line-height:.95;letter-spacing:1px;color:var(--white);margin-bottom:24px;}
+.hero h1 em{font-style:normal;color:var(--blue);display:block;}
+.hero-desc{font-size:16px;line-height:1.7;color:var(--muted);max-width:420px;margin-bottom:40px;}
+.hero-actions{display:flex;gap:12px;align-items:center;}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--blue);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;border:none;border-radius:8px;
+  cursor:pointer;text-decoration:none;transition:opacity .2s,transform .1s;}
+.btn-primary:hover{opacity:.88;transform:translateY(-1px);}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:14px 24px;background:none;
+  color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;
+  border:1px solid var(--line);border-radius:8px;cursor:pointer;text-decoration:none;transition:color .2s,border-color .2s;}
+.btn-ghost:hover{color:var(--white);border-color:var(--dim);}
+.hero-stats{display:flex;gap:40px;margin-top:52px;padding-top:36px;border-top:1px solid var(--line);}
+.sv{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;color:var(--white);line-height:1;}
+.sv span{color:var(--blue);}
+.sl{font-size:12px;color:var(--muted);margin-top:4px;}
+.hero-visual{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.hero-visual::before{content:'';position:absolute;width:400px;height:400px;
+  background:radial-gradient(circle,rgba(28,126,245,.12) 0%,transparent 70%);
+  top:50%;left:50%;transform:translate(-50%,-50%);}
+.hero-float{font-size:130px;z-index:1;filter:drop-shadow(0 24px 48px rgba(28,126,245,.3));animation:float 5s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.hero-card{position:absolute;bottom:40px;left:-24px;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;animation:float 4s ease-in-out infinite;}
+.hero-thumb{width:48px;height:48px;background:var(--surface);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden;}
+.hero-thumb img{width:100%;height:100%;object-fit:cover;}
+
+/* ── SECTIONS ── */
+section{padding:80px 72px;}
+.section-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:48px;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:1px;color:var(--white);line-height:1;}
+.section-sub{font-size:14px;color:var(--muted);margin-top:6px;}
+.section-link{font-size:13px;font-weight:500;color:var(--blue-light);text-decoration:none;display:flex;align-items:center;gap:6px;transition:gap .2s;}
+.section-link:hover{gap:10px;}
+
+/* ── CATEGORIES ── */
+.categories{padding:48px 72px;background:var(--deep);}
+.cat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
+.cat-item{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 12px;
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;cursor:pointer;
+  transition:border-color .2s,background .2s,transform .2s;text-decoration:none;}
+.cat-item:hover{border-color:var(--blue);background:var(--card);transform:translateY(-2px);}
+.cat-item.active{border-color:var(--blue);background:var(--blue-glow);}
+.cat-icon{width:48px;height:48px;background:var(--card);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.cat-item.active .cat-icon{background:rgba(28,126,245,.15);}
+.cat-name{font-size:13px;font-weight:500;color:var(--muted);text-align:center;}
+.cat-item.active .cat-name,.cat-item:hover .cat-name{color:var(--blue-light);}
+.cat-count{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);}
+.cat-item.active .cat-count{color:var(--blue);}
+.cat-soon{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--gold);
+  background:rgba(240,168,50,.1);border:1px solid rgba(240,168,50,.25);padding:2px 8px;border-radius:4px;}
+
+/* ── PRODUCT GRID ── */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;}
+.product-card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  cursor:pointer;transition:border-color .25s,transform .25s,box-shadow .25s;position:relative;}
+.product-card:hover{border-color:rgba(28,126,245,.4);transform:translateY(-4px);
+  box-shadow:0 16px 48px rgba(0,0,0,.4),0 0 0 1px rgba(28,126,245,.1);}
+.product-badge{position:absolute;top:14px;left:14px;z-index:2;font-size:10px;font-weight:600;
+  letter-spacing:.8px;text-transform:uppercase;padding:4px 10px;border-radius:6px;}
+.badge-new{background:rgba(28,126,245,.2);color:var(--blue-light);border:1px solid rgba(28,126,245,.3);}
+.badge-hot{background:rgba(255,77,106,.15);color:#FF7A90;border:1px solid rgba(255,77,106,.3);}
+.badge-sale{background:rgba(0,201,122,.15);color:#33DDA1;border:1px solid rgba(0,201,122,.3);}
+.wish-btn{position:absolute;top:12px;right:12px;z-index:2;width:32px;height:32px;
+  background:rgba(13,17,23,.7);border:1px solid var(--line);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:background .2s;}
+.wish-btn:hover{background:rgba(255,77,106,.15);border-color:var(--danger);}
+.product-img-wrap{height:200px;background:var(--surface);display:flex;align-items:center;
+  justify-content:center;font-size:72px;position:relative;overflow:hidden;}
+.product-img-wrap img{width:100%;height:100%;object-fit:cover;}
+.product-img-wrap::after{content:'';position:absolute;bottom:0;left:0;right:0;height:60px;
+  background:linear-gradient(to top,var(--card),transparent);}
+.product-body{padding:20px;}
+.product-brand{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;}
+.product-name{font-size:15px;font-weight:600;color:var(--white);line-height:1.4;margin-bottom:8px;}
+.product-spec{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6;}
+.product-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:14px;}
+.product-price{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500;color:var(--white);}
+.product-price .old{font-size:12px;color:var(--dim);text-decoration:line-through;display:block;margin-bottom:-2px;}
+.stars{display:flex;align-items:center;gap:4px;margin-bottom:12px;}
+.star{color:var(--gold);font-size:12px;}.star-e{color:var(--dim);font-size:12px;}
+.rcount{font-size:12px;color:var(--muted);margin-left:4px;}
+.add-cart-btn{width:36px;height:36px;background:var(--blue);border:none;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:white;
+  line-height:1;transition:opacity .2s,transform .1s;}
+.add-cart-btn:hover{opacity:.85;transform:scale(1.05);}
+
+/* ── LOADING ── */
+.loading-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;}
+.skeleton{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;animation:shimmer 1.5s infinite;}
+@keyframes shimmer{0%,100%{opacity:.6;}50%{opacity:1;}}
+.sk-img{height:200px;background:var(--surface);}
+.sk-body{padding:20px;}
+.sk-line{height:12px;background:var(--surface);border-radius:4px;margin-bottom:10px;}
+.sk-line.short{width:60%;}
+
+/* ── EMPTY STATE ── */
+.no-products{padding:80px 24px;text-align:center;}
+.no-prod-icon{font-size:48px;margin-bottom:16px;opacity:.3;}
+.no-prod-title{font-size:20px;font-weight:600;color:var(--muted);margin-bottom:8px;}
+.no-prod-sub{font-size:14px;color:var(--dim);}
+.no-prod-link{display:inline-flex;align-items:center;gap:8px;margin-top:20px;padding:12px 24px;
+  background:var(--blue-glow);border:1px solid rgba(28,126,245,.3);border-radius:8px;
+  color:var(--blue-light);font-size:14px;font-weight:500;text-decoration:none;}
+.no-prod-link:hover{background:rgba(28,126,245,.18);}
+
+/* ── NOT CONFIGURED BANNER ── */
+.config-banner{margin:24px 72px;background:rgba(240,168,50,.08);border:1px solid rgba(240,168,50,.25);
+  border-radius:12px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.config-banner p{font-size:14px;color:#D4A030;line-height:1.5;}
+.config-banner a{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;
+  background:rgba(240,168,50,.15);border:1px solid rgba(240,168,50,.3);border-radius:8px;
+  font-size:13px;font-weight:500;color:#FFBE4D;text-decoration:none;white-space:nowrap;transition:background .2s;}
+.config-banner a:hover{background:rgba(240,168,50,.25);}
+
+/* ── PROMO ── */
+.promo-banner{margin:0 72px;background:var(--surface);border:1px solid var(--line);border-radius:20px;
+  overflow:hidden;display:grid;grid-template-columns:1fr auto;position:relative;}
+.promo-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 40% 100% at 0% 50%,rgba(28,126,245,.1) 0%,transparent 60%);pointer-events:none;}
+.promo-content{padding:48px 56px;position:relative;z-index:1;}
+.promo-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.promo-title{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:1px;line-height:.95;color:var(--white);margin-bottom:16px;}
+.promo-title em{font-style:normal;color:var(--blue);}
+.promo-desc{font-size:15px;color:var(--muted);margin-bottom:28px;max-width:400px;line-height:1.6;}
+.promo-visual{width:320px;display:flex;align-items:center;justify-content:center;font-size:120px;}
+
+/* ── COMING SOON ── */
+.coming-soon{background:var(--deep);}
+.soon-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.soon-card{background:var(--surface);border:1px dashed var(--dim);border-radius:16px;padding:36px 24px;text-align:center;position:relative;overflow:hidden;}
+.soon-card::before{content:'COMING SOON';position:absolute;top:14px;right:-22px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;color:var(--gold);background:rgba(240,168,50,.12);border:1px solid rgba(240,168,50,.2);padding:3px 10px;transform:rotate(35deg);width:110px;text-align:center;}
+.soon-icon{font-size:48px;margin-bottom:16px;opacity:.5;display:block;}
+.soon-name{font-size:15px;font-weight:600;color:var(--muted);margin-bottom:6px;}
+.soon-desc{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:16px;}
+.notify-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:7px 14px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.notify-btn:hover{color:var(--blue-light);border-color:rgba(28,126,245,.4);}
+
+/* ── FEATURES ── */
+.features-strip{padding:48px 72px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);gap:24px;}
+.feature-item{display:flex;align-items:flex-start;gap:16px;}
+.feature-icon{width:44px;height:44px;background:rgba(28,126,245,.08);border:1px solid rgba(28,126,245,.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.feature-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:4px;}
+.feature-desc{font-size:12px;color:var(--muted);line-height:1.5;}
+
+/* ── FOOTER ── */
+footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px 36px;}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px;}
+.footer-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--white);margin-bottom:14px;display:block;}
+.footer-logo span{color:var(--blue);}
+.footer-desc{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:20px;max-width:260px;}
+.footer-social{display:flex;gap:10px;}
+.social-btn{width:34px;height:34px;background:var(--surface);border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:border-color .2s;}
+.social-btn:hover{border-color:var(--blue);}
+.footer-heading{font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+.footer-links{list-style:none;}
+.footer-links li{margin-bottom:10px;}
+.footer-links a{text-decoration:none;font-size:14px;color:var(--dim);transition:color .2s;}
+.footer-links a:hover{color:var(--white);}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:28px;border-top:1px solid var(--line);}
+.footer-copy{font-size:13px;color:var(--dim);}
+.footer-legal{display:flex;gap:24px;}
+.footer-legal a{font-size:13px;color:var(--dim);text-decoration:none;}
+.footer-legal a:hover{color:var(--muted);}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid rgba(0,201,122,.4);
+  border-radius:10px;padding:14px 20px;display:flex;align-items:center;gap:12px;
+  font-size:14px;font-weight:500;color:var(--white);z-index:999;
+  transform:translateY(80px);opacity:0;transition:transform .3s,opacity .3s;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast-icon{color:var(--green);}
+
+.fade-up{opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s;}
+.fade-up.visible{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="logo">Tech<span>Vault</span></a>
+  <ul class="nav-links">
+    <li><a href="#" class="active">Home</a></li>
+    <li><a href="#laptops">Laptops</a></li>
+    <li><a href="#phones">Phones</a></li>
+    <li><a href="#coming-soon">More</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="search-bar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="live-search" placeholder="Search products…" oninput="handleSearch()">
+    </div>
+    <a class="admin-link" href="admin.html">⚙️ Admin</a>
+    <div class="icon-btn" id="cart-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7A90" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span class="cart-badge" id="cart-count">0</span>
+    </div>
+  </div>
+</nav>
+
+<!-- NOT CONFIGURED BANNER -->
+<div class="config-banner" id="config-banner" style="display:none">
+  <p>⚠️ <strong>Firebase not configured yet.</strong> Paste your Firebase credentials into <code style="font-family:monospace">index.html</code> and <code style="font-family:monospace">admin.html</code> to enable real-time product sync.</p>
+  <a href="setup.html">📖 Setup Guide →</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow">New Arrivals 2025</div>
+    <h1>Next-Gen<em>Electronics</em>Await You</h1>
+    <p class="hero-desc">Discover the latest laptops, smartphones, and cutting-edge tech — curated for performance, style, and real-world power.</p>
+    <div class="hero-actions">
+      <a href="#laptops" class="btn-primary">Shop Now →</a>
+      <a href="#coming-soon" class="btn-ghost">Coming Soon</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="sv" id="hero-total">—<span>+</span></div><div class="sl">Products Listed</div></div>
+      <div><div class="sv">48<span>K</span></div><div class="sl">Happy Customers</div></div>
+      <div><div class="sv">4.9<span>★</span></div><div class="sl">Average Rating</div></div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div style="font-size:220px;opacity:.08;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);user-select:none">💻</div>
+    <div class="hero-float">💻</div>
+    <div class="hero-card">
+      <div class="hero-thumb" id="hero-thumb">💻</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--white)" id="hero-prod-name">TechVault Store</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue-light)" id="hero-prod-price">Add products in Admin</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<div class="categories">
+  <div class="cat-grid">
+    <a href="#laptops" class="cat-item active" onclick="setFilter('all',this)">
+      <div class="cat-icon">🏪</div><div class="cat-name">All Products</div>
+      <div class="cat-count" id="cat-all">0 items</div>
+    </a>
+    <a href="#laptops" class="cat-item" onclick="setFilter('laptop',this)">
+      <div class="cat-icon">💻</div><div class="cat-name">Laptops</div>
+      <div class="cat-count" id="cat-laptop">0 items</div>
+    </a>
+    <a href="#phones" class="cat-item" onclick="setFilter('phone',this)">
+      <div class="cat-icon">📱</div><div class="cat-name">Phones</div>
+      <div class="cat-count" id="cat-phone">0 items</div>
+    </a>
+    <a href="#coming-soon" class="cat-item"><div class="cat-icon">🎧</div><div class="cat-name">Audio</div><span class="cat-soon">Soon</span></a>
+    <a href="#coming-soon" class="cat-item"><div class="cat-icon">⌚</div><div class="cat-name">Wearables</div><span class="cat-soon">Soon</span></a>
+    <a href="#coming-soon" class="cat-item"><div class="cat-icon">🎮</div><div class="cat-name">Gaming</div><span class="cat-soon">Soon</span></a>
+  </div>
+</div>
+
+<!-- LAPTOPS -->
+<section id="laptops">
+  <div class="section-header fade-up">
+    <div><div class="section-title">Laptops</div><div class="section-sub">Powerful machines for creators, professionals &amp; students</div></div>
+    <a href="#" class="section-link">View all →</a>
+  </div>
+  <div id="laptops-grid" class="product-grid"></div>
+</section>
+
+<!-- PROMO -->
+<div class="promo-banner">
+  <div class="promo-content">
+    <div class="promo-eyebrow"><span>⚡</span>Limited Time Offer</div>
+    <div class="promo-title">Trade In<br><em>Save Big</em></div>
+    <p class="promo-desc">Trade in your old device and get up to KSh 40,000 off your next purchase.</p>
+    <a href="#" class="btn-primary">Get Trade-In Value →</a>
+  </div>
+  <div class="promo-visual">📲</div>
+</div>
+
+<!-- PHONES -->
+<section id="phones">
+  <div class="section-header fade-up">
+    <div><div class="section-title">Smartphones</div><div class="section-sub">Latest flagships and best-value picks</div></div>
+    <a href="#" class="section-link">View all →</a>
+  </div>
+  <div id="phones-grid" class="product-grid"></div>
+</section>
+
+<!-- SEARCH RESULTS -->
+<section id="search-section" style="display:none">
+  <div class="section-header fade-up">
+    <div><div class="section-title">Results</div><div class="section-sub" id="search-count"></div></div>
+    <a href="#" class="section-link" onclick="clearSearch()">Clear ✕</a>
+  </div>
+  <div class="product-grid" id="search-grid"></div>
+</section>
+
+<!-- COMING SOON -->
+<section id="coming-soon" class="coming-soon">
+  <div class="section-header fade-up"><div><div class="section-title">More Products</div><div class="section-sub">Expanding our catalogue</div></div></div>
+  <div class="soon-grid">
+    <div class="soon-card fade-up"><span class="soon-icon">🎧</span><div class="soon-name">Audio &amp; Headphones</div><div class="soon-desc">ANC headphones, earbuds and speakers.</div><button class="notify-btn" onclick="notify('Audio')">🔔 Notify Me</button></div>
+    <div class="soon-card fade-up"><span class="soon-icon">⌚</span><div class="soon-name">Wearables</div><div class="soon-desc">Smartwatches and fitness trackers.</div><button class="notify-btn" onclick="notify('Wearables')">🔔 Notify Me</button></div>
+    <div class="soon-card fade-up"><span class="soon-icon">🖥️</span><div class="soon-name">Monitors</div><div class="soon-desc">4K and ultra-wide displays.</div><button class="notify-btn" onclick="notify('Monitors')">🔔 Notify Me</button></div>
+    <div class="soon-card fade-up"><span class="soon-icon">🎮</span><div class="soon-name">Gaming</div><div class="soon-desc">Consoles and accessories.</div><button class="notify-btn" onclick="notify('Gaming')">🔔 Notify Me</button></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<div class="features-strip">
+  <div class="feature-item fade-up"><div class="feature-icon">🚚</div><div><div class="feature-title">Free Delivery</div><div class="feature-desc">Free shipping on orders over KSh 5,000.</div></div></div>
+  <div class="feature-item fade-up"><div class="feature-icon">🔄</div><div><div class="feature-title">14-Day Returns</div><div class="feature-desc">Hassle-free returns within 14 days.</div></div></div>
+  <div class="feature-item fade-up"><div class="feature-icon">🔒</div><div><div class="feature-title">Secure Payments</div><div class="feature-desc">M-Pesa, Visa, Mastercard supported.</div></div></div>
+  <div class="feature-item fade-up"><div class="feature-icon">🛠️</div><div><div class="feature-title">Warranty Cover</div><div class="feature-desc">Official manufacturer warranty.</div></div></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <span class="footer-logo">Tech<span>Vault</span></span>
+      <p class="footer-desc">Your trusted destination for premium electronics in Kenya.</p>
+      <div class="footer-social"><div class="social-btn">𝕏</div><div class="social-btn">f</div><div class="social-btn">in</div><div class="social-btn">▶</div></div>
+    </div>
+    <div><div class="footer-heading">Shop</div><ul class="footer-links"><li><a href="#laptops">Laptops</a></li><li><a href="#phones">Phones</a></li><li><a href="#">Deals</a></li><li><a href="#coming-soon">Coming Soon</a></li></ul></div>
+    <div><div class="footer-heading">Support</div><ul class="footer-links"><li><a href="#">Help Center</a></li><li><a href="#">Track Order</a></li><li><a href="#">Returns</a></li><li><a href="#">Contact</a></li></ul></div>
+    <div><div class="footer-heading">Company</div><ul class="footer-links"><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="admin.html">Admin Panel</a></li><li><a href="setup.html">Setup Guide</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 TechVault Kenya. All rights reserved.</div>
+    <div class="footer-legal"><a href="#">Privacy</a><a href="#">Terms</a></div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"><span class="toast-icon">✓</span><span id="toast-msg"></span></div>
+
+<script>
+let products   = [];
+let cartCount  = 0;
+
+/* ── Init ── */
+window.addEventListener('DOMContentLoaded', () => {
+  if (!IS_CONFIGURED) {
+    document.getElementById('config-banner').style.display = 'flex';
+    renderEmpty('laptops-grid','laptop');
+    renderEmpty('phones-grid','phone');
+    return;
+  }
+  subscribeProducts();
+  initScrollAnim();
+});
+
+/* ── Real-time listener ── */
+function subscribeProducts() {
+  showSkeletons('laptops-grid');
+  showSkeletons('phones-grid');
+  db.collection('products').orderBy('createdAt','desc').onSnapshot(
+    snap => {
+      products = snap.docs.map(d => ({id:d.id,...d.data()}));
+      updateCounts();
+      renderSections();
+      updateHeroCard();
+    },
+    err => showToast('DB error: '+err.message)
+  );
+}
+
+function updateCounts() {
+  const total   = products.length;
+  const laptops = products.filter(p=>p.category==='laptop').length;
+  const phones  = products.filter(p=>p.category==='phone').length;
+  document.getElementById('hero-total').innerHTML = total+'<span>+</span>';
+  document.getElementById('cat-all').textContent    = total+' items';
+  document.getElementById('cat-laptop').textContent = laptops+' items';
+  document.getElementById('cat-phone').textContent  = phones+' items';
+}
+
+function updateHeroCard() {
+  if (!products.length) return;
+  const latest = products[0];
+  document.getElementById('hero-prod-name').textContent  = latest.name;
+  document.getElementById('hero-prod-price').textContent = 'KSh '+fmt(latest.price);
+  const thumb = document.getElementById('hero-thumb');
+  if (latest.image) {
+    thumb.innerHTML = `<img src="${latest.image}" alt="${latest.name}" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.parentElement.textContent='${latest.category==='laptop'?'💻':'📱'}'">`;
+  } else {
+    thumb.textContent = latest.category==='laptop'?'💻':'📱';
+  }
+}
+
+function renderSections() {
+  const laptops = products.filter(p=>p.category==='laptop');
+  const phones  = products.filter(p=>p.category==='phone');
+  renderGrid('laptops-grid', laptops, 'laptop');
+  renderGrid('phones-grid',  phones,  'phone');
+  initScrollAnim();
+}
+
+function renderGrid(containerId, items, type) {
+  const el = document.getElementById(containerId);
+  if (!items.length) { renderEmpty(containerId, type); return; }
+  el.innerHTML = items.map(buildCard).join('');
+}
+
+function renderEmpty(containerId, type) {
+  document.getElementById(containerId).innerHTML = `
+    <div class="no-products" style="grid-column:1/-1">
+      <div class="no-prod-icon">${type==='laptop'?'💻':'📱'}</div>
+      <div class="no-prod-title">No ${type==='laptop'?'laptops':'phones'} yet</div>
+      <div class="no-prod-sub">Add products from the admin panel — they appear here instantly.</div>
+      <a href="admin.html" class="no-prod-link">⚙️ Go to Admin Panel →</a>
+    </div>`;
+}
+
+function showSkeletons(containerId) {
+  document.getElementById(containerId).innerHTML = [1,2,3,4].map(()=>`
+    <div class="skeleton"><div class="sk-img"></div>
+    <div class="sk-body"><div class="sk-line"></div><div class="sk-line short"></div></div></div>`).join('');
+}
+
+/* ── Card builder ── */
+function buildCard(p) {
+  const imgHtml = p.image
+    ? `<img src="${p.image}" alt="${p.name}" onerror="this.parentElement.innerHTML='${p.category==='laptop'?'💻':'📱'}';this.parentElement.style.fontSize='72px'">`
+    : (p.category==='laptop'?'💻':'📱');
+  const badge = (p.badge&&p.badge!=='none')
+    ? `<span class="product-badge badge-${p.badge}">${p.badge.toUpperCase()}</span>` : '';
+  const priceHtml = p.oldPrice
+    ? `<span class="old">KSh ${fmt(p.oldPrice)}</span>KSh ${fmt(p.price)}`
+    : `KSh ${fmt(p.price)}`;
+  const rcount = p.reviews>999?`(${(p.reviews/1000).toFixed(1)}K)`:`(${p.reviews||0})`;
+  const stars  = buildStars(p.rating||4.5);
+  return `<div class="product-card fade-up">
+    ${badge}
+    <div class="wish-btn" onclick="toggleWish(this)">♡</div>
+    <div class="product-img-wrap">${imgHtml}</div>
+    <div class="product-body">
+      <div class="product-brand">${p.brand}</div>
+      <div class="product-name">${p.name}</div>
+      <div class="stars">${stars}<span class="rcount">${rcount}</span></div>
+      <div class="product-spec">${p.spec}</div>
+      <div class="product-footer">
+        <div class="product-price">${priceHtml}</div>
+        <button class="add-cart-btn" onclick="addCart('${(p.name||'').replace(/'/g,"\\'")}')">+</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildStars(r) {
+  r = Math.min(5,Math.max(0,r));
+  return Array.from({length:5},(_,i)=>
+    `<span class="${i<Math.round(r)?'star':'star-e'}">★</span>`
+  ).join('');
+}
+
+/* ── Search ── */
+function handleSearch() {
+  const q = document.getElementById('live-search').value.trim().toLowerCase();
+  const ss = document.getElementById('search-section');
+  const ls = document.getElementById('laptops');
+  const ps = document.getElementById('phones');
+  if (!q) { ss.style.display='none'; ls.style.display=''; ps.style.display=''; return; }
+  ls.style.display='none'; ps.style.display='none'; ss.style.display='';
+  const res = products.filter(p=>
+    (p.name||'').toLowerCase().includes(q)||
+    (p.brand||'').toLowerCase().includes(q)||
+    (p.spec||'').toLowerCase().includes(q)
+  );
+  document.getElementById('search-count').textContent = `${res.length} result${res.length!==1?'s':''} for "${q}"`;
+  document.getElementById('search-grid').innerHTML = res.length
+    ? res.map(buildCard).join('')
+    : `<div class="no-products" style="grid-column:1/-1"><div class="no-prod-icon">🔍</div><div class="no-prod-title">No results</div><div class="no-prod-sub">Try a different search term.</div></div>`;
+  initScrollAnim();
+}
+function clearSearch() {
+  document.getElementById('live-search').value='';
+  document.getElementById('search-section').style.display='none';
+  document.getElementById('laptops').style.display='';
+  document.getElementById('phones').style.display='';
+}
+
+/* ── Interactions ── */
+function setFilter(filter, el) {
+  document.querySelectorAll('.cat-item').forEach(c=>c.classList.remove('active'));
+  if(el) el.classList.add('active');
+  clearSearch();
+}
+function addCart(name) {
+  cartCount++;
+  document.getElementById('cart-count').textContent=cartCount;
+  showToast(name+' added to cart!');
+}
+function toggleWish(btn) {
+  btn.textContent = btn.textContent==='♡'?'♥':'♡';
+  btn.style.color = btn.textContent==='♥'?'#FF4D6A':'';
+}
+function notify(cat){ showToast('You\'ll be notified when '+cat+' launches!'); }
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show'); clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove('show'),2800);
+}
+function fmt(n){ return Number(n).toLocaleString(); }
+
+/* ── Scroll animation ── */
+function initScrollAnim() {
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach((e,i)=>{ if(e.isIntersecting){ setTimeout(()=>e.target.classList.add('visible'),i*60); obs.unobserve(e.target); } });
+  },{threshold:.05});
+  document.querySelectorAll('.fade-up:not(.visible)').forEach(el=>obs.observe(el));
+}
+</script>
+</body>
+</html>
