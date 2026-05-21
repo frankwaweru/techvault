@@ -8,29 +8,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
-<script>
-// ================================================================
-// ✏️  PASTE YOUR FIREBASE CONFIG HERE (same as admin.html)
-// ================================================================
-const firebaseConfig = {
-  apiKey:            "AIzaSyDWidj-ZvdlQ3Ud0EWfAevWdbosmvY76nM",
-  authDomain:        "techvault-1.firebaseapp.com",
-  projectId:         "techvault-1",
-  storageBucket:     "techvault-1.firebasestorage.app",
-  messagingSenderId: "766493565374",
-  appId:             "1:766493565374:web:736d7b8acb3c2fae8059ef",
-  measurementId:     "G-2VFBBCCVQD"
-};
-// ================================================================
-
-const IS_CONFIGURED = !firebaseConfig.apiKey.includes('PASTE_YOUR');
-let db, auth;
-if (IS_CONFIGURED) {
-  firebase.initializeApp(firebaseConfig);
-  db   = firebase.firestore();
-  auth = firebase.auth();
-}
-</script>
 <style>
 :root{
   --black:#080A0E;--deep:#0D1117;--surface:#13181F;--card:#181E27;
@@ -42,32 +19,114 @@ if (IS_CONFIGURED) {
 html{scroll-behavior:smooth;}
 body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white);overflow-x:hidden;}
 
-/* ── NAV ── */
+/* NAV */
 nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
-  padding:0 48px;height:64px;background:rgba(8,10,14,.92);backdrop-filter:blur(16px);
+  padding:0 48px;height:64px;background:rgba(8,10,14,.95);backdrop-filter:blur(16px);
   border-bottom:1px solid var(--line);}
 .logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--white);text-decoration:none;}
 .logo span{color:var(--blue);}
 .nav-links{display:flex;gap:32px;list-style:none;}
-.nav-links a{text-decoration:none;font-size:14px;font-weight:500;color:var(--muted);letter-spacing:.5px;transition:color .2s;}
+.nav-links a{text-decoration:none;font-size:14px;font-weight:500;color:var(--muted);transition:color .2s;}
 .nav-links a:hover{color:var(--white);}
 .nav-links a.active{color:var(--blue-light);}
 .nav-right{display:flex;align-items:center;gap:12px;}
 .search-bar{display:flex;align-items:center;background:var(--surface);border:1px solid var(--line);
   border-radius:8px;padding:0 14px;gap:8px;height:38px;transition:border-color .2s;}
 .search-bar:focus-within{border-color:var(--blue);}
-.search-bar input{background:none;border:none;outline:none;color:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;width:180px;}
+.search-bar input{background:none;border:none;outline:none;color:var(--white);
+  font-family:'DM Sans',sans-serif;font-size:14px;width:180px;}
 .search-bar input::placeholder{color:var(--dim);}
+
+/* SIGN IN BUTTON */
+.signin-btn{display:inline-flex;align-items:center;gap:7px;padding:0 18px;height:38px;
+  background:var(--blue);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;
+  font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:opacity .2s;}
+.signin-btn:hover{opacity:.85;}
+
+/* USER PILL */
+.user-pill{display:none;align-items:center;gap:8px;padding:0 12px 0 8px;height:38px;
+  background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  cursor:pointer;position:relative;transition:border-color .2s;}
+.user-pill:hover{border-color:var(--blue);}
+.user-pill.visible{display:flex;}
+.user-avatar{width:26px;height:26px;border-radius:6px;background:var(--blue-glow);
+  border:1px solid rgba(28,126,245,.3);display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:var(--blue-light);}
+.user-name{font-size:13px;font-weight:500;color:var(--white);max-width:100px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.user-caret{font-size:9px;color:var(--muted);}
+.user-dropdown{display:none;position:absolute;top:calc(100% + 8px);right:0;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:8px;min-width:200px;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,.5);}
+.user-dropdown.open{display:block;}
+.dd-email{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
+  padding:6px 10px 10px;border-bottom:1px solid var(--line);margin-bottom:6px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dd-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;
+  font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;
+  transition:background .15s,color .15s;text-decoration:none;}
+.dd-item:hover{background:var(--surface);color:var(--white);}
+.dd-item.dd-admin{color:var(--gold);}
+.dd-item.dd-admin:hover{background:rgba(240,168,50,.08);color:var(--gold);}
+.dd-item.dd-danger{color:var(--danger);}
+.dd-item.dd-danger:hover{background:rgba(255,77,106,.08);}
+
+/* CART */
 .icon-btn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;
   background:var(--surface);border:1px solid var(--line);border-radius:8px;cursor:pointer;
-  transition:border-color .2s;position:relative;text-decoration:none;}
+  transition:border-color .2s;position:relative;}
 .icon-btn:hover{border-color:var(--blue);}
 .cart-badge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:var(--blue);
   border-radius:50%;font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;
   font-family:'JetBrains Mono',monospace;border:2px solid var(--black);}
 
+/* AUTH MODAL */
+.auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
+  backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;}
+.auth-overlay.active{display:flex;}
+.auth-box{background:var(--card);border:1px solid var(--line);border-radius:20px;
+  width:100%;max-width:400px;overflow:hidden;position:relative;
+  animation:slideUp .2s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.auth-close{position:absolute;top:14px;right:14px;width:28px;height:28px;
+  background:var(--surface);border:1px solid var(--line);border-radius:7px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--muted);z-index:1;transition:color .2s;}
+.auth-close:hover{color:var(--white);}
+.auth-tabs{display:flex;border-bottom:1px solid var(--line);}
+.auth-tab{flex:1;padding:15px;text-align:center;font-size:13px;font-weight:600;
+  color:var(--muted);cursor:pointer;border:none;background:var(--surface);
+  font-family:'DM Sans',sans-serif;transition:color .2s,background .2s;border-bottom:2px solid transparent;}
+.auth-tab.active{color:var(--blue-light);background:var(--card);border-bottom-color:var(--blue);}
+.auth-panel{padding:28px;display:none;}
+.auth-panel.active{display:block;}
+.auth-icon{font-size:30px;text-align:center;margin-bottom:12px;}
+.auth-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;
+  color:var(--white);text-align:center;margin-bottom:4px;}
+.auth-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:22px;}
+.auth-field{margin-bottom:12px;}
+.auth-field label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px;}
+.auth-field input{width:100%;background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;padding:11px 14px;color:var(--white);font-family:'DM Sans',sans-serif;
+  font-size:14px;outline:none;transition:border-color .2s;}
+.auth-field input:focus{border-color:var(--blue);}
+.auth-field input::placeholder{color:var(--dim);}
+.auth-error{background:rgba(255,77,106,.1);border:1px solid rgba(255,77,106,.25);
+  border-radius:8px;padding:10px 14px;font-size:12px;color:#FF7A90;
+  margin-bottom:12px;display:none;line-height:1.5;}
+.auth-error.show{display:block;}
+.auth-ok{background:rgba(0,201,122,.1);border:1px solid rgba(0,201,122,.25);
+  border-radius:8px;padding:10px 14px;font-size:12px;color:#33DDA1;
+  margin-bottom:12px;display:none;}
+.auth-ok.show{display:block;}
+.auth-btn{width:100%;padding:12px;background:var(--blue);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  border:none;border-radius:10px;cursor:pointer;margin-top:6px;transition:opacity .2s;}
+.auth-btn:hover{opacity:.87;}
+.auth-btn:disabled{opacity:.45;cursor:not-allowed;}
+.auth-footer-note{text-align:center;font-size:11px;color:var(--dim);margin-top:16px;}
 
-/* ── HERO ── */
+/* HERO */
 .hero{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 64px);max-height:720px;overflow:hidden;position:relative;}
 .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 70% 50%,rgba(28,126,245,.07) 0%,transparent 70%);pointer-events:none;}
 .hero-content{display:flex;flex-direction:column;justify-content:center;padding:80px 48px 80px 72px;position:relative;z-index:2;}
@@ -77,30 +136,23 @@ nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-co
 .hero h1 em{font-style:normal;color:var(--blue);display:block;}
 .hero-desc{font-size:16px;line-height:1.7;color:var(--muted);max-width:420px;margin-bottom:40px;}
 .hero-actions{display:flex;gap:12px;align-items:center;}
-.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--blue);color:#fff;
-  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;border:none;border-radius:8px;
-  cursor:pointer;text-decoration:none;transition:opacity .2s,transform .1s;}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--blue);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;border:none;border-radius:8px;cursor:pointer;text-decoration:none;transition:opacity .2s,transform .1s;}
 .btn-primary:hover{opacity:.88;transform:translateY(-1px);}
-.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:14px 24px;background:none;
-  color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;
-  border:1px solid var(--line);border-radius:8px;cursor:pointer;text-decoration:none;transition:color .2s,border-color .2s;}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:14px 24px;background:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:1px solid var(--line);border-radius:8px;cursor:pointer;text-decoration:none;transition:color .2s,border-color .2s;}
 .btn-ghost:hover{color:var(--white);border-color:var(--dim);}
 .hero-stats{display:flex;gap:40px;margin-top:52px;padding-top:36px;border-top:1px solid var(--line);}
 .sv{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;color:var(--white);line-height:1;}
 .sv span{color:var(--blue);}
 .sl{font-size:12px;color:var(--muted);margin-top:4px;}
 .hero-visual{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-.hero-visual::before{content:'';position:absolute;width:400px;height:400px;
-  background:radial-gradient(circle,rgba(28,126,245,.12) 0%,transparent 70%);
-  top:50%;left:50%;transform:translate(-50%,-50%);}
+.hero-visual::before{content:'';position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(28,126,245,.12) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);}
 .hero-float{font-size:130px;z-index:1;filter:drop-shadow(0 24px 48px rgba(28,126,245,.3));animation:float 5s ease-in-out infinite;}
-@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
-.hero-card{position:absolute;bottom:40px;left:-24px;background:var(--card);border:1px solid var(--line);
-  border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;animation:float 4s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.hero-card{position:absolute;bottom:40px;left:-24px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;animation:float 4s ease-in-out infinite;}
 .hero-thumb{width:48px;height:48px;background:var(--surface);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden;}
 .hero-thumb img{width:100%;height:100%;object-fit:cover;}
 
-/* ── SECTIONS ── */
+/* SECTIONS */
 section{padding:80px 72px;}
 .section-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:48px;}
 .section-title{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:1px;color:var(--white);line-height:1;}
@@ -108,12 +160,10 @@ section{padding:80px 72px;}
 .section-link{font-size:13px;font-weight:500;color:var(--blue-light);text-decoration:none;display:flex;align-items:center;gap:6px;transition:gap .2s;}
 .section-link:hover{gap:10px;}
 
-/* ── CATEGORIES ── */
+/* CATEGORIES */
 .categories{padding:48px 72px;background:var(--deep);}
 .cat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
-.cat-item{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 12px;
-  background:var(--surface);border:1px solid var(--line);border-radius:12px;cursor:pointer;
-  transition:border-color .2s,background .2s,transform .2s;text-decoration:none;}
+.cat-item{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;cursor:pointer;transition:border-color .2s,background .2s,transform .2s;text-decoration:none;}
 .cat-item:hover{border-color:var(--blue);background:var(--card);transform:translateY(-2px);}
 .cat-item.active{border-color:var(--blue);background:var(--blue-glow);}
 .cat-icon{width:48px;height:48px;background:var(--card);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;}
@@ -122,29 +172,21 @@ section{padding:80px 72px;}
 .cat-item.active .cat-name,.cat-item:hover .cat-name{color:var(--blue-light);}
 .cat-count{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);}
 .cat-item.active .cat-count{color:var(--blue);}
-.cat-soon{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--gold);
-  background:rgba(240,168,50,.1);border:1px solid rgba(240,168,50,.25);padding:2px 8px;border-radius:4px;}
+.cat-soon{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--gold);background:rgba(240,168,50,.1);border:1px solid rgba(240,168,50,.25);padding:2px 8px;border-radius:4px;}
 
-/* ── PRODUCT GRID ── */
+/* PRODUCT GRID */
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;}
-.product-card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;
-  cursor:pointer;transition:border-color .25s,transform .25s,box-shadow .25s;position:relative;}
-.product-card:hover{border-color:rgba(28,126,245,.4);transform:translateY(-4px);
-  box-shadow:0 16px 48px rgba(0,0,0,.4),0 0 0 1px rgba(28,126,245,.1);}
-.product-badge{position:absolute;top:14px;left:14px;z-index:2;font-size:10px;font-weight:600;
-  letter-spacing:.8px;text-transform:uppercase;padding:4px 10px;border-radius:6px;}
+.product-card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;transition:border-color .25s,transform .25s,box-shadow .25s;position:relative;}
+.product-card:hover{border-color:rgba(28,126,245,.4);transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.4);}
+.product-badge{position:absolute;top:14px;left:14px;z-index:2;font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;padding:4px 10px;border-radius:6px;}
 .badge-new{background:rgba(28,126,245,.2);color:var(--blue-light);border:1px solid rgba(28,126,245,.3);}
 .badge-hot{background:rgba(255,77,106,.15);color:#FF7A90;border:1px solid rgba(255,77,106,.3);}
 .badge-sale{background:rgba(0,201,122,.15);color:#33DDA1;border:1px solid rgba(0,201,122,.3);}
-.wish-btn{position:absolute;top:12px;right:12px;z-index:2;width:32px;height:32px;
-  background:rgba(13,17,23,.7);border:1px solid var(--line);border-radius:8px;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:background .2s;}
+.wish-btn{position:absolute;top:12px;right:12px;z-index:2;width:32px;height:32px;background:rgba(13,17,23,.7);border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:background .2s;}
 .wish-btn:hover{background:rgba(255,77,106,.15);border-color:var(--danger);}
-.product-img-wrap{height:200px;background:var(--surface);display:flex;align-items:center;
-  justify-content:center;font-size:72px;position:relative;overflow:hidden;}
+.product-img-wrap{height:200px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:72px;position:relative;overflow:hidden;}
 .product-img-wrap img{width:100%;height:100%;object-fit:cover;}
-.product-img-wrap::after{content:'';position:absolute;bottom:0;left:0;right:0;height:60px;
-  background:linear-gradient(to top,var(--card),transparent);}
+.product-img-wrap::after{content:'';position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(to top,var(--card),transparent);}
 .product-body{padding:20px;}
 .product-brand{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;}
 .product-name{font-size:15px;font-weight:600;color:var(--white);line-height:1.4;margin-bottom:8px;}
@@ -155,42 +197,25 @@ section{padding:80px 72px;}
 .stars{display:flex;align-items:center;gap:4px;margin-bottom:12px;}
 .star{color:var(--gold);font-size:12px;}.star-e{color:var(--dim);font-size:12px;}
 .rcount{font-size:12px;color:var(--muted);margin-left:4px;}
-.add-cart-btn{width:36px;height:36px;background:var(--blue);border:none;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:white;
-  line-height:1;transition:opacity .2s,transform .1s;}
+.add-cart-btn{width:36px;height:36px;background:var(--blue);border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:white;line-height:1;transition:opacity .2s,transform .1s;}
 .add-cart-btn:hover{opacity:.85;transform:scale(1.05);}
 
-/* ── LOADING ── */
-.loading-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;}
+/* SKELETON */
 .skeleton{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;animation:shimmer 1.5s infinite;}
-@keyframes shimmer{0%,100%{opacity:.6;}50%{opacity:1;}}
+@keyframes shimmer{0%,100%{opacity:.6}50%{opacity:1}}
 .sk-img{height:200px;background:var(--surface);}
 .sk-body{padding:20px;}
 .sk-line{height:12px;background:var(--surface);border-radius:4px;margin-bottom:10px;}
 .sk-line.short{width:60%;}
 
-/* ── EMPTY STATE ── */
-.no-products{padding:80px 24px;text-align:center;}
+/* EMPTY */
+.no-products{padding:80px 24px;text-align:center;grid-column:1/-1;}
 .no-prod-icon{font-size:48px;margin-bottom:16px;opacity:.3;}
 .no-prod-title{font-size:20px;font-weight:600;color:var(--muted);margin-bottom:8px;}
 .no-prod-sub{font-size:14px;color:var(--dim);}
-.no-prod-link{display:inline-flex;align-items:center;gap:8px;margin-top:20px;padding:12px 24px;
-  background:var(--blue-glow);border:1px solid rgba(28,126,245,.3);border-radius:8px;
-  color:var(--blue-light);font-size:14px;font-weight:500;text-decoration:none;}
-.no-prod-link:hover{background:rgba(28,126,245,.18);}
 
-/* ── NOT CONFIGURED BANNER ── */
-.config-banner{margin:24px 72px;background:rgba(240,168,50,.08);border:1px solid rgba(240,168,50,.25);
-  border-radius:12px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
-.config-banner p{font-size:14px;color:#D4A030;line-height:1.5;}
-.config-banner a{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;
-  background:rgba(240,168,50,.15);border:1px solid rgba(240,168,50,.3);border-radius:8px;
-  font-size:13px;font-weight:500;color:#FFBE4D;text-decoration:none;white-space:nowrap;transition:background .2s;}
-.config-banner a:hover{background:rgba(240,168,50,.25);}
-
-/* ── PROMO ── */
-.promo-banner{margin:0 72px;background:var(--surface);border:1px solid var(--line);border-radius:20px;
-  overflow:hidden;display:grid;grid-template-columns:1fr auto;position:relative;}
+/* PROMO */
+.promo-banner{margin:0 72px;background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden;display:grid;grid-template-columns:1fr auto;position:relative;}
 .promo-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 40% 100% at 0% 50%,rgba(28,126,245,.1) 0%,transparent 60%);pointer-events:none;}
 .promo-content{padding:48px 56px;position:relative;z-index:1;}
 .promo-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
@@ -199,7 +224,7 @@ section{padding:80px 72px;}
 .promo-desc{font-size:15px;color:var(--muted);margin-bottom:28px;max-width:400px;line-height:1.6;}
 .promo-visual{width:320px;display:flex;align-items:center;justify-content:center;font-size:120px;}
 
-/* ── COMING SOON ── */
+/* COMING SOON */
 .coming-soon{background:var(--deep);}
 .soon-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
 .soon-card{background:var(--surface);border:1px dashed var(--dim);border-radius:16px;padding:36px 24px;text-align:center;position:relative;overflow:hidden;}
@@ -207,17 +232,17 @@ section{padding:80px 72px;}
 .soon-icon{font-size:48px;margin-bottom:16px;opacity:.5;display:block;}
 .soon-name{font-size:15px;font-weight:600;color:var(--muted);margin-bottom:6px;}
 .soon-desc{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:16px;}
-.notify-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:7px 14px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.notify-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:7px 14px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .notify-btn:hover{color:var(--blue-light);border-color:rgba(28,126,245,.4);}
 
-/* ── FEATURES ── */
+/* FEATURES */
 .features-strip{padding:48px 72px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);gap:24px;}
 .feature-item{display:flex;align-items:flex-start;gap:16px;}
 .feature-icon{width:44px;height:44px;background:rgba(28,126,245,.08);border:1px solid rgba(28,126,245,.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
 .feature-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:4px;}
 .feature-desc{font-size:12px;color:var(--muted);line-height:1.5;}
 
-/* ── FOOTER ── */
+/* FOOTER */
 footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px 36px;}
 .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px;}
 .footer-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--white);margin-bottom:14px;display:block;}
@@ -237,111 +262,18 @@ footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px
 .footer-legal a{font-size:13px;color:var(--dim);text-decoration:none;}
 .footer-legal a:hover{color:var(--muted);}
 
-/* ── TOAST ── */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid rgba(0,201,122,.4);
-  border-radius:10px;padding:14px 20px;display:flex;align-items:center;gap:12px;
-  font-size:14px;font-weight:500;color:var(--white);z-index:999;
-  transform:translateY(80px);opacity:0;transition:transform .3s,opacity .3s;pointer-events:none;}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid rgba(0,201,122,.4);border-radius:10px;padding:14px 20px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:500;color:var(--white);z-index:999;transform:translateY(80px);opacity:0;transition:transform .3s,opacity .3s;pointer-events:none;}
 .toast.show{transform:translateY(0);opacity:1;}
 .toast-icon{color:var(--green);}
 
 .fade-up{opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s;}
 .fade-up.visible{opacity:1;transform:translateY(0);}
-
-/* ── AUTH NAV STATES ── */
-.signin-btn{display:inline-flex;align-items:center;gap:7px;padding:0 16px;height:38px;
-  background:var(--blue);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;
-  font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:opacity .2s;}
-.signin-btn:hover{opacity:.85;}
-
-.user-pill{display:inline-flex;align-items:center;gap:8px;padding:0 12px;height:38px;
-  background:var(--surface);border:1px solid var(--line);border-radius:8px;
-  cursor:pointer;position:relative;transition:border-color .2s;}
-.user-pill:hover{border-color:var(--blue);}
-.user-avatar{width:26px;height:26px;border-radius:6px;background:var(--blue-glow);
-  border:1px solid rgba(28,126,245,.3);display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;color:var(--blue-light);}
-.user-name{font-size:13px;font-weight:500;color:var(--white);max-width:110px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.user-caret{font-size:10px;color:var(--muted);}
-
-.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;
-  background:var(--card);border:1px solid var(--line);border-radius:12px;
-  padding:8px;min-width:200px;z-index:200;
-  opacity:0;pointer-events:none;transform:translateY(-6px);
-  transition:opacity .18s,transform .18s;}
-.user-dropdown.open{opacity:1;pointer-events:all;transform:translateY(0);}
-.dd-email{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
-  padding:6px 10px 10px;border-bottom:1px solid var(--line);margin-bottom:6px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.dd-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;
-  font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;
-  transition:background .15s,color .15s;text-decoration:none;}
-.dd-item:hover{background:var(--surface);color:var(--white);}
-.dd-item.danger{color:var(--danger);}
-.dd-item.danger:hover{background:rgba(255,77,106,.08);}
-.dd-admin{color:var(--gold);}
-.dd-admin:hover{background:rgba(240,168,50,.08) !important;color:var(--gold) !important;}
-
-/* ── AUTH MODAL ── */
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);
-  backdrop-filter:blur(6px);z-index:500;
-  display:flex;align-items:center;justify-content:center;
-  opacity:0;pointer-events:none;transition:opacity .2s;}
-.modal-backdrop.open{opacity:1;pointer-events:all;}
-.auth-modal{background:var(--card);border:1px solid var(--line);border-radius:20px;
-  width:100%;max-width:400px;overflow:hidden;
-  transform:translateY(20px) scale(.97);transition:transform .2s;}
-.modal-backdrop.open .auth-modal{transform:translateY(0) scale(1);}
-
-.auth-tabs{display:flex;border-bottom:1px solid var(--line);}
-.auth-tab{flex:1;padding:16px;text-align:center;font-size:13px;font-weight:600;
-  color:var(--muted);cursor:pointer;transition:color .2s,background .2s;border:none;
-  background:var(--surface);font-family:'DM Sans',sans-serif;}
-.auth-tab.active{color:var(--blue-light);background:var(--card);border-bottom:2px solid var(--blue);}
-
-.auth-body{padding:28px;}
-.auth-icon{font-size:32px;text-align:center;margin-bottom:14px;}
-.auth-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;
-  color:var(--white);text-align:center;margin-bottom:4px;}
-.auth-subtitle{font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px;}
-
-.auth-field{margin-bottom:14px;}
-.auth-field label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px;}
-.auth-field input{width:100%;background:var(--surface);border:1px solid var(--line);
-  border-radius:10px;padding:11px 14px;color:var(--white);font-family:'DM Sans',sans-serif;
-  font-size:14px;outline:none;transition:border-color .2s;}
-.auth-field input:focus{border-color:var(--blue);}
-.auth-field input::placeholder{color:var(--dim);}
-
-.auth-error{background:rgba(255,77,106,.1);border:1px solid rgba(255,77,106,.25);
-  border-radius:8px;padding:10px 14px;font-size:12px;color:#FF7A90;
-  margin-bottom:14px;display:none;line-height:1.5;}
-.auth-error.show{display:block;}
-.auth-success{background:rgba(0,201,122,.1);border:1px solid rgba(0,201,122,.25);
-  border-radius:8px;padding:10px 14px;font-size:12px;color:#33DDA1;
-  margin-bottom:14px;display:none;}
-.auth-success.show{display:block;}
-
-.auth-submit{width:100%;padding:13px;background:var(--blue);color:#fff;
-  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;border:none;
-  border-radius:10px;cursor:pointer;transition:opacity .2s;margin-top:4px;}
-.auth-submit:hover{opacity:.87;}
-.auth-submit:disabled{opacity:.45;cursor:not-allowed;}
-.auth-close{position:absolute;top:14px;right:16px;width:28px;height:28px;
-  background:var(--surface);border:1px solid var(--line);border-radius:7px;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-size:13px;color:var(--muted);transition:color .2s;z-index:1;}
-.auth-close:hover{color:var(--white);}
-.auth-modal-wrap{position:relative;}
-.auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;
-  font-size:11px;color:var(--dim);}
-.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--line);}
-
 </style>
 </head>
 <body>
 
+<!-- NAV -->
 <nav>
   <a href="#" class="logo">Tech<span>Vault</span></a>
   <ul class="nav-links">
@@ -355,30 +287,26 @@ footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="live-search" placeholder="Search products…" oninput="handleSearch()">
     </div>
-    <!-- AUTH NAV -->
-    <button class="signin-btn" id="signin-nav-btn" onclick="openAuthModal('login')">Sign In</button>
-    <div class="user-pill" id="user-pill" style="display:none" onclick="toggleDropdown()">
-      <div class="user-avatar" id="user-avatar">?</div>
-      <span class="user-name" id="user-name-nav">Account</span>
+    <!-- auth: guest state -->
+    <button class="signin-btn" id="signin-btn" onclick="openModal('login')">Sign In</button>
+    <!-- auth: signed-in state -->
+    <div class="user-pill" id="user-pill" onclick="toggleDropdown(event)">
+      <div class="user-avatar" id="user-avatar">U</div>
+      <span class="user-name" id="user-name">Account</span>
       <span class="user-caret">▾</span>
       <div class="user-dropdown" id="user-dropdown">
-        <div class="dd-email" id="dd-email"></div>
-        <a class="dd-item dd-admin" id="dd-admin-link" href="admin.html" style="display:none">⚙️ Admin Panel</a>
-        <div class="dd-item danger" onclick="doSignOut()">⏏ Sign Out</div>
+        <div class="dd-email" id="dd-email">—</div>
+        <a class="dd-item dd-admin" id="dd-admin" href="admin.html" style="display:none">⚙️ Admin Panel</a>
+        <div class="dd-item dd-danger" onclick="doSignOut()">⏏ Sign Out</div>
       </div>
     </div>
-    <div class="icon-btn" id="cart-btn">
+    <!-- cart -->
+    <div class="icon-btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7A90" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
       <span class="cart-badge" id="cart-count">0</span>
     </div>
   </div>
 </nav>
-
-<!-- NOT CONFIGURED BANNER -->
-<div class="config-banner" id="config-banner" style="display:none">
-  <p>⚠️ <strong>Firebase not configured yet.</strong> Paste your Firebase credentials into <code style="font-family:monospace">index.html</code> and <code style="font-family:monospace">admin.html</code> to enable real-time product sync.</p>
-  <a href="setup.html">📖 Setup Guide →</a>
-</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -403,7 +331,7 @@ footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px
       <div class="hero-thumb" id="hero-thumb">💻</div>
       <div>
         <div style="font-size:13px;font-weight:600;color:var(--white)" id="hero-prod-name">TechVault Store</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue-light)" id="hero-prod-price">Add products in Admin</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue-light)" id="hero-prod-price">Premium electronics</div>
       </div>
     </div>
   </div>
@@ -433,7 +361,7 @@ footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px
 <!-- LAPTOPS -->
 <section id="laptops">
   <div class="section-header fade-up">
-    <div><div class="section-title">Laptops</div><div class="section-sub">Powerful machines for creators, professionals &amp; students</div></div>
+    <div><div class="section-title">Laptops</div><div class="section-sub">Powerful machines for creators &amp; professionals</div></div>
     <a href="#" class="section-link">View all →</a>
   </div>
   <div id="laptops-grid" class="product-grid"></div>
@@ -497,7 +425,7 @@ footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px
     </div>
     <div><div class="footer-heading">Shop</div><ul class="footer-links"><li><a href="#laptops">Laptops</a></li><li><a href="#phones">Phones</a></li><li><a href="#">Deals</a></li><li><a href="#coming-soon">Coming Soon</a></li></ul></div>
     <div><div class="footer-heading">Support</div><ul class="footer-links"><li><a href="#">Help Center</a></li><li><a href="#">Track Order</a></li><li><a href="#">Returns</a></li><li><a href="#">Contact</a></li></ul></div>
-    <div><div class="footer-heading">Company</div><ul class="footer-links"><li><a href="#">About</a></li><li><a href="#">Careers</a></li></ul></div>
+    <div><div class="footer-heading">Company</div><ul class="footer-links"><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#" onclick="openModal('login');return false;">My Account</a></li></ul></div>
   </div>
   <div class="footer-bottom">
     <div class="footer-copy">© 2025 TechVault Kenya. All rights reserved.</div>
@@ -505,408 +433,371 @@ footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px
   </div>
 </footer>
 
-<div class="toast" id="toast"><span class="toast-icon">✓</span><span id="toast-msg"></span></div>
-
-<script>
-let products   = [];
-let cartCount  = 0;
-
-/* ── Init ── */
-window.addEventListener('DOMContentLoaded', () => {
-  if (!IS_CONFIGURED) {
-    document.getElementById('config-banner').style.display = 'flex';
-    renderEmpty('laptops-grid','laptop');
-    renderEmpty('phones-grid','phone');
-    return;
-  }
-  subscribeProducts();
-  initScrollAnim();
-});
-
-/* ── Real-time listener ── */
-function subscribeProducts() {
-  showSkeletons('laptops-grid');
-  showSkeletons('phones-grid');
-  db.collection('products').orderBy('createdAt','desc').onSnapshot(
-    snap => {
-      products = snap.docs.map(d => ({id:d.id,...d.data()}));
-      updateCounts();
-      renderSections();
-      updateHeroCard();
-    },
-    err => showToast('DB error: '+err.message)
-  );
-}
-
-function updateCounts() {
-  const total   = products.length;
-  const laptops = products.filter(p=>p.category==='laptop').length;
-  const phones  = products.filter(p=>p.category==='phone').length;
-  document.getElementById('hero-total').innerHTML = total+'<span>+</span>';
-  document.getElementById('cat-all').textContent    = total+' items';
-  document.getElementById('cat-laptop').textContent = laptops+' items';
-  document.getElementById('cat-phone').textContent  = phones+' items';
-}
-
-function updateHeroCard() {
-  if (!products.length) return;
-  const latest = products[0];
-  document.getElementById('hero-prod-name').textContent  = latest.name;
-  document.getElementById('hero-prod-price').textContent = 'KSh '+fmt(latest.price);
-  const thumb = document.getElementById('hero-thumb');
-  if (latest.image) {
-    thumb.innerHTML = `<img src="${latest.image}" alt="${latest.name}" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.parentElement.textContent='${latest.category==='laptop'?'💻':'📱'}'">`;
-  } else {
-    thumb.textContent = latest.category==='laptop'?'💻':'📱';
-  }
-}
-
-function renderSections() {
-  const laptops = products.filter(p=>p.category==='laptop');
-  const phones  = products.filter(p=>p.category==='phone');
-  renderGrid('laptops-grid', laptops, 'laptop');
-  renderGrid('phones-grid',  phones,  'phone');
-  initScrollAnim();
-}
-
-function renderGrid(containerId, items, type) {
-  const el = document.getElementById(containerId);
-  if (!items.length) { renderEmpty(containerId, type); return; }
-  el.innerHTML = items.map(buildCard).join('');
-}
-
-function renderEmpty(containerId, type) {
-  document.getElementById(containerId).innerHTML = `
-    <div class="no-products" style="grid-column:1/-1">
-      <div class="no-prod-icon">${type==='laptop'?'💻':'📱'}</div>
-      <div class="no-prod-title">No ${type==='laptop'?'laptops':'phones'} yet</div>
-      <div class="no-prod-sub">Products will appear here once they are added.</div>
-    </div>`;
-}
-
-function showSkeletons(containerId) {
-  document.getElementById(containerId).innerHTML = [1,2,3,4].map(()=>`
-    <div class="skeleton"><div class="sk-img"></div>
-    <div class="sk-body"><div class="sk-line"></div><div class="sk-line short"></div></div></div>`).join('');
-}
-
-/* ── Card builder ── */
-function buildCard(p) {
-  const imgHtml = p.image
-    ? `<img src="${p.image}" alt="${p.name}" onerror="this.parentElement.innerHTML='${p.category==='laptop'?'💻':'📱'}';this.parentElement.style.fontSize='72px'">`
-    : (p.category==='laptop'?'💻':'📱');
-  const badge = (p.badge&&p.badge!=='none')
-    ? `<span class="product-badge badge-${p.badge}">${p.badge.toUpperCase()}</span>` : '';
-  const priceHtml = p.oldPrice
-    ? `<span class="old">KSh ${fmt(p.oldPrice)}</span>KSh ${fmt(p.price)}`
-    : `KSh ${fmt(p.price)}`;
-  const rcount = p.reviews>999?`(${(p.reviews/1000).toFixed(1)}K)`:`(${p.reviews||0})`;
-  const stars  = buildStars(p.rating||4.5);
-  return `<div class="product-card fade-up">
-    ${badge}
-    <div class="wish-btn" onclick="toggleWish(this)">♡</div>
-    <div class="product-img-wrap">${imgHtml}</div>
-    <div class="product-body">
-      <div class="product-brand">${p.brand}</div>
-      <div class="product-name">${p.name}</div>
-      <div class="stars">${stars}<span class="rcount">${rcount}</span></div>
-      <div class="product-spec">${p.spec}</div>
-      <div class="product-footer">
-        <div class="product-price">${priceHtml}</div>
-        <button class="add-cart-btn" onclick="addCart('${(p.name||'').replace(/'/g,"\\'")}')">+</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-function buildStars(r) {
-  r = Math.min(5,Math.max(0,r));
-  return Array.from({length:5},(_,i)=>
-    `<span class="${i<Math.round(r)?'star':'star-e'}">★</span>`
-  ).join('');
-}
-
-/* ── Search ── */
-function handleSearch() {
-  const q = document.getElementById('live-search').value.trim().toLowerCase();
-  const ss = document.getElementById('search-section');
-  const ls = document.getElementById('laptops');
-  const ps = document.getElementById('phones');
-  if (!q) { ss.style.display='none'; ls.style.display=''; ps.style.display=''; return; }
-  ls.style.display='none'; ps.style.display='none'; ss.style.display='';
-  const res = products.filter(p=>
-    (p.name||'').toLowerCase().includes(q)||
-    (p.brand||'').toLowerCase().includes(q)||
-    (p.spec||'').toLowerCase().includes(q)
-  );
-  document.getElementById('search-count').textContent = `${res.length} result${res.length!==1?'s':''} for "${q}"`;
-  document.getElementById('search-grid').innerHTML = res.length
-    ? res.map(buildCard).join('')
-    : `<div class="no-products" style="grid-column:1/-1"><div class="no-prod-icon">🔍</div><div class="no-prod-title">No results</div><div class="no-prod-sub">Try a different search term.</div></div>`;
-  initScrollAnim();
-}
-function clearSearch() {
-  document.getElementById('live-search').value='';
-  document.getElementById('search-section').style.display='none';
-  document.getElementById('laptops').style.display='';
-  document.getElementById('phones').style.display='';
-}
-
-/* ── Interactions ── */
-function setFilter(filter, el) {
-  document.querySelectorAll('.cat-item').forEach(c=>c.classList.remove('active'));
-  if(el) el.classList.add('active');
-  clearSearch();
-}
-function addCart(name) {
-  cartCount++;
-  document.getElementById('cart-count').textContent=cartCount;
-  showToast(name+' added to cart!');
-}
-function toggleWish(btn) {
-  btn.textContent = btn.textContent==='♡'?'♥':'♡';
-  btn.style.color = btn.textContent==='♥'?'#FF4D6A':'';
-}
-function notify(cat){ showToast('You\'ll be notified when '+cat+' launches!'); }
-function showToast(msg) {
-  const t=document.getElementById('toast');
-  document.getElementById('toast-msg').textContent=msg;
-  t.classList.add('show'); clearTimeout(t._t);
-  t._t=setTimeout(()=>t.classList.remove('show'),2800);
-}
-function fmt(n){ return Number(n).toLocaleString(); }
-
-/* ── Scroll animation ── */
-function initScrollAnim() {
-  const obs = new IntersectionObserver((entries)=>{
-    entries.forEach((e,i)=>{ if(e.isIntersecting){ setTimeout(()=>e.target.classList.add('visible'),i*60); obs.unobserve(e.target); } });
-  },{threshold:.05});
-  document.querySelectorAll('.fade-up:not(.visible)').forEach(el=>obs.observe(el));
-}
-/* ═══════════════════════════════
-   AUTH SYSTEM
-═══════════════════════════════ */
-const ADMIN_COLLECTION = 'admins';
-
-// Watch auth state
-if (IS_CONFIGURED) {
-  auth.onAuthStateChanged(async user => {
-    if (user) {
-      const isAdmin = await checkIfAdmin(user.uid);
-      updateNavForUser(user, isAdmin);
-    } else {
-      updateNavForGuest();
-    }
-  });
-}
-
-async function checkIfAdmin(uid) {
-  try {
-    const doc = await db.collection(ADMIN_COLLECTION).doc(uid).get();
-    return doc.exists;
-  } catch(e) { return false; }
-}
-
-function updateNavForUser(user, isAdmin) {
-  document.getElementById('signin-nav-btn').style.display = 'none';
-  const pill = document.getElementById('user-pill');
-  pill.style.display = 'flex';
-  const initials = (user.displayName || user.email || 'U')[0].toUpperCase();
-  document.getElementById('user-avatar').textContent   = initials;
-  document.getElementById('user-name-nav').textContent = user.displayName || user.email.split('@')[0];
-  document.getElementById('dd-email').textContent      = user.email;
-  document.getElementById('dd-admin-link').style.display = isAdmin ? 'flex' : 'none';
-}
-
-function updateNavForGuest() {
-  document.getElementById('signin-nav-btn').style.display = 'flex';
-  document.getElementById('user-pill').style.display = 'none';
-}
-
-/* ── Modal ── */
-function openAuthModal(tab) {
-  tab = tab || 'login';
-  switchTab(tab);
-  document.getElementById('auth-backdrop').classList.add('open');
-  setTimeout(function() {
-    var el = document.getElementById(tab === 'login' ? 'login-email' : 'reg-name');
-    if (el) el.focus();
-  }, 220);
-}
-
-function closeAuthModal() {
-  document.getElementById('auth-backdrop').classList.remove('open');
-  clearAuthErrors();
-}
-
-function handleBackdropClick(e) {
-  if (e.target === document.getElementById('auth-backdrop')) closeAuthModal();
-}
-
-function switchTab(tab) {
-  document.getElementById('panel-login').style.display    = tab === 'login'    ? 'block' : 'none';
-  document.getElementById('panel-register').style.display = tab === 'register' ? 'block' : 'none';
-  document.getElementById('tab-login').classList.toggle('active',    tab === 'login');
-  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
-}
-
-function clearAuthErrors() {
-  ['login-error','register-error','register-success'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) { el.classList.remove('show'); el.textContent = ''; }
-  });
-}
-
-/* ── Login ── */
-async function doLogin() {
-  var email = document.getElementById('login-email').value.trim();
-  var pass  = document.getElementById('login-password').value;
-  var btn   = document.getElementById('login-submit');
-  var err   = document.getElementById('login-error');
-  err.classList.remove('show');
-  if (!email || !pass) { showAuthErr('login-error','Please enter your email and password.'); return; }
-  btn.disabled = true; btn.textContent = 'Signing in…';
-  try {
-    var cred = await auth.signInWithEmailAndPassword(email, pass);
-    var isAdmin = await checkIfAdmin(cred.user.uid);
-    closeAuthModal();
-    if (isAdmin) {
-      showToast('Welcome back, Admin! Redirecting…');
-      setTimeout(function() { window.location.href = 'admin.html'; }, 1200);
-    } else {
-      var name = cred.user.displayName || cred.user.email.split('@')[0];
-      showToast('Welcome back, ' + name + '! 👋');
-      updateNavForUser(cred.user, false);
-    }
-  } catch(e) {
-    btn.disabled = false; btn.textContent = 'Sign In →';
-    var msgs = {
-      'auth/user-not-found':     'No account found with that email.',
-      'auth/wrong-password':     'Incorrect password. Try again.',
-      'auth/invalid-email':      'Please enter a valid email address.',
-      'auth/too-many-requests':  'Too many attempts. Please wait a moment.',
-      'auth/invalid-credential': 'Incorrect email or password.'
-    };
-    showAuthErr('login-error', msgs[e.code] || 'Login failed. Please try again.');
-  }
-}
-
-/* ── Register ── */
-async function doRegister() {
-  var name  = document.getElementById('reg-name').value.trim();
-  var email = document.getElementById('reg-email').value.trim();
-  var pass  = document.getElementById('reg-password').value;
-  var btn   = document.getElementById('register-submit');
-  document.getElementById('register-error').classList.remove('show');
-  document.getElementById('register-success').classList.remove('show');
-  if (!name || !email || !pass) { showAuthErr('register-error','Please fill in all fields.'); return; }
-  if (pass.length < 6) { showAuthErr('register-error','Password must be at least 6 characters.'); return; }
-  btn.disabled = true; btn.textContent = 'Creating account…';
-  try {
-    var cred = await auth.createUserWithEmailAndPassword(email, pass);
-    await cred.user.updateProfile({ displayName: name });
-    await db.collection('customers').doc(cred.user.uid).set({
-      name: name, email: email,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    var el = document.getElementById('register-success');
-    el.textContent = '✅ Account created! Welcome to TechVault, ' + name + '!';
-    el.classList.add('show');
-    btn.textContent = 'Done!';
-    setTimeout(function() {
-      closeAuthModal();
-      updateNavForUser(cred.user, false);
-      showToast('Welcome to TechVault, ' + name + '! 🎉');
-    }, 1500);
-  } catch(e) {
-    btn.disabled = false; btn.textContent = 'Create Account →';
-    var msgs = {
-      'auth/email-already-in-use': 'An account with this email already exists.',
-      'auth/invalid-email':        'Please enter a valid email address.',
-      'auth/weak-password':        'Password is too weak. Use at least 6 characters.'
-    };
-    showAuthErr('register-error', msgs[e.code] || 'Registration failed. Please try again.');
-  }
-}
-
-/* ── Sign out ── */
-async function doSignOut() {
-  toggleDropdown(true);
-  await auth.signOut();
-  showToast('Signed out. See you soon! 👋');
-}
-
-/* ── Dropdown ── */
-function toggleDropdown(forceClose) {
-  var dd = document.getElementById('user-dropdown');
-  if (forceClose) { dd.classList.remove('open'); return; }
-  dd.classList.toggle('open');
-}
-document.addEventListener('click', function(e) {
-  var pill = document.getElementById('user-pill');
-  var dd   = document.getElementById('user-dropdown');
-  if (pill && dd && !pill.contains(e.target)) dd.classList.remove('open');
-});
-
-function showAuthErr(id, msg) {
-  var el = document.getElementById(id);
-  el.textContent = '⚠️ ' + msg;
-  el.classList.add('show');
-}
-
-</script>
-
 <!-- AUTH MODAL -->
-<div class="modal-backdrop" id="auth-backdrop" onclick="handleBackdropClick(event)">
-  <div class="auth-modal auth-modal-wrap">
-    <div class="auth-close" onclick="closeAuthModal()">✕</div>
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-close" onclick="closeModal()">✕</div>
     <div class="auth-tabs">
       <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
       <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Create Account</button>
     </div>
-
-    <!-- LOGIN PANEL -->
-    <div id="panel-login" class="auth-body">
+    <!-- LOGIN -->
+    <div class="auth-panel active" id="panel-login">
       <div class="auth-icon">🔐</div>
       <div class="auth-title">Welcome Back</div>
-      <div class="auth-subtitle">Sign in to your TechVault account</div>
-      <div class="auth-error" id="login-error"></div>
-      <div class="auth-field">
-        <label>Email address</label>
-        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email">
-      </div>
-      <div class="auth-field">
-        <label>Password</label>
-        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"
-          onkeydown="if(event.key==='Enter') doLogin()">
-      </div>
-      <button class="auth-submit" id="login-submit" onclick="doLogin()">Sign In →</button>
+      <div class="auth-sub">Sign in to your TechVault account</div>
+      <div class="auth-error" id="login-err"></div>
+      <div class="auth-field"><label>Email address</label>
+        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"></div>
+      <div class="auth-field"><label>Password</label>
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign In →</button>
+      <div class="auth-footer-note">🔒 Secured with Firebase Authentication</div>
     </div>
-
-    <!-- REGISTER PANEL -->
-    <div id="panel-register" class="auth-body" style="display:none">
+    <!-- REGISTER -->
+    <div class="auth-panel" id="panel-register">
       <div class="auth-icon">✨</div>
       <div class="auth-title">Create Account</div>
-      <div class="auth-subtitle">Join TechVault and start shopping</div>
-      <div class="auth-error" id="register-error"></div>
-      <div class="auth-success" id="register-success"></div>
-      <div class="auth-field">
-        <label>Full name</label>
-        <input type="text" id="reg-name" placeholder="Frank Waweru" autocomplete="name">
-      </div>
-      <div class="auth-field">
-        <label>Email address</label>
-        <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email">
-      </div>
-      <div class="auth-field">
-        <label>Password</label>
-        <input type="password" id="reg-password" placeholder="At least 6 characters"
-          onkeydown="if(event.key==='Enter') doRegister()">
-      </div>
-      <button class="auth-submit" id="register-submit" onclick="doRegister()">Create Account →</button>
+      <div class="auth-sub">Join TechVault and start shopping</div>
+      <div class="auth-error" id="reg-err"></div>
+      <div class="auth-ok" id="reg-ok"></div>
+      <div class="auth-field"><label>Full name</label>
+        <input type="text" id="reg-name" placeholder="Your name" autocomplete="name"></div>
+      <div class="auth-field"><label>Email address</label>
+        <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email"></div>
+      <div class="auth-field"><label>Password</label>
+        <input type="password" id="reg-pass" placeholder="At least 6 characters"
+          onkeydown="if(event.key==='Enter')doRegister()"></div>
+      <button class="auth-btn" id="reg-btn" onclick="doRegister()">Create Account →</button>
     </div>
   </div>
 </div>
 
+<!-- TOAST -->
+<div class="toast" id="toast"><span class="toast-icon">✓</span><span id="toast-msg"></span></div>
+
+<script>
+// ── Firebase Config ──────────────────────────────
+var firebaseConfig = {
+  apiKey:            "AIzaSyDWidj-ZvdlQ3Ud0EWfAevWdbosmvY76nM",
+  authDomain:        "techvault-1.firebaseapp.com",
+  projectId:         "techvault-1",
+  storageBucket:     "techvault-1.firebasestorage.app",
+  messagingSenderId: "766493565374",
+  appId:             "1:766493565374:web:736d7b8acb3c2fae8059ef"
+};
+firebase.initializeApp(firebaseConfig);
+var db   = firebase.firestore();
+var auth = firebase.auth();
+
+// ── State ────────────────────────────────────────
+var products   = [];
+var cartCount  = 0;
+
+// ── Auth State Watcher ───────────────────────────
+auth.onAuthStateChanged(function(user) {
+  if (user) {
+    checkIfAdmin(user.uid).then(function(isAdmin) {
+      showUserNav(user, isAdmin);
+    });
+  } else {
+    showGuestNav();
+  }
+});
+
+function checkIfAdmin(uid) {
+  return db.collection('admins').doc(uid).get().then(function(doc) {
+    return doc.exists;
+  }).catch(function() { return false; });
+}
+
+function showUserNav(user, isAdmin) {
+  document.getElementById('signin-btn').style.display = 'none';
+  var pill = document.getElementById('user-pill');
+  pill.classList.add('visible');
+  var initial = (user.displayName || user.email || 'U')[0].toUpperCase();
+  document.getElementById('user-avatar').textContent  = initial;
+  document.getElementById('user-name').textContent    = user.displayName || user.email.split('@')[0];
+  document.getElementById('dd-email').textContent     = user.email;
+  document.getElementById('dd-admin').style.display   = isAdmin ? 'flex' : 'none';
+}
+
+function showGuestNav() {
+  document.getElementById('signin-btn').style.display = 'flex';
+  document.getElementById('user-pill').classList.remove('visible');
+}
+
+// ── Modal ────────────────────────────────────────
+function openModal(tab) {
+  switchTab(tab || 'login');
+  document.getElementById('auth-overlay').classList.add('active');
+  setTimeout(function() {
+    var el = document.getElementById(tab === 'register' ? 'reg-name' : 'login-email');
+    if (el) el.focus();
+  }, 100);
+}
+
+function closeModal() {
+  document.getElementById('auth-overlay').classList.remove('active');
+}
+
+function switchTab(tab) {
+  document.getElementById('panel-login').classList.toggle('active',    tab === 'login');
+  document.getElementById('panel-register').classList.toggle('active', tab === 'register');
+  document.getElementById('tab-login').classList.toggle('active',      tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active',   tab === 'register');
+}
+
+// Close on backdrop click
+document.getElementById('auth-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ── Login ────────────────────────────────────────
+function doLogin() {
+  var email = document.getElementById('login-email').value.trim();
+  var pass  = document.getElementById('login-pass').value;
+  var btn   = document.getElementById('login-btn');
+  clearErr('login-err');
+  if (!email || !pass) { showErr('login-err','Please enter your email and password.'); return; }
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(function(cred) {
+      return checkIfAdmin(cred.user.uid).then(function(isAdmin) {
+        closeModal();
+        if (isAdmin) {
+          showToast('Welcome back, Admin! Redirecting…');
+          setTimeout(function() { window.location.href = 'admin.html'; }, 1200);
+        } else {
+          var name = cred.user.displayName || cred.user.email.split('@')[0];
+          showUserNav(cred.user, false);
+          showToast('Welcome back, ' + name + '! 👋');
+        }
+      });
+    })
+    .catch(function(e) {
+      btn.disabled = false; btn.textContent = 'Sign In →';
+      var msgs = {
+        'auth/user-not-found':     'No account with that email.',
+        'auth/wrong-password':     'Incorrect password.',
+        'auth/invalid-email':      'Please enter a valid email.',
+        'auth/too-many-requests':  'Too many attempts. Wait a moment.',
+        'auth/invalid-credential': 'Incorrect email or password.'
+      };
+      showErr('login-err', msgs[e.code] || 'Login failed. Try again.');
+    });
+}
+
+// ── Register ─────────────────────────────────────
+function doRegister() {
+  var name  = document.getElementById('reg-name').value.trim();
+  var email = document.getElementById('reg-email').value.trim();
+  var pass  = document.getElementById('reg-pass').value;
+  var btn   = document.getElementById('reg-btn');
+  clearErr('reg-err'); clearErr('reg-ok');
+  if (!name || !email || !pass) { showErr('reg-err','Please fill in all fields.'); return; }
+  if (pass.length < 6) { showErr('reg-err','Password must be at least 6 characters.'); return; }
+  btn.disabled = true; btn.textContent = 'Creating account…';
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then(function(cred) {
+      return cred.user.updateProfile({ displayName: name }).then(function() {
+        return db.collection('customers').doc(cred.user.uid).set({
+          name: name, email: email,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }).then(function() {
+        document.getElementById('reg-ok').textContent = '✅ Account created! Welcome, ' + name + '!';
+        document.getElementById('reg-ok').classList.add('show');
+        btn.textContent = 'Done!';
+        setTimeout(function() {
+          closeModal();
+          showUserNav(cred.user, false);
+          showToast('Welcome to TechVault, ' + name + '! 🎉');
+        }, 1400);
+      });
+    })
+    .catch(function(e) {
+      btn.disabled = false; btn.textContent = 'Create Account →';
+      var msgs = {
+        'auth/email-already-in-use': 'An account with this email already exists.',
+        'auth/invalid-email':        'Please enter a valid email address.',
+        'auth/weak-password':        'Password must be at least 6 characters.'
+      };
+      showErr('reg-err', msgs[e.code] || 'Registration failed.');
+    });
+}
+
+// ── Sign Out ─────────────────────────────────────
+function doSignOut() {
+  document.getElementById('user-dropdown').classList.remove('open');
+  auth.signOut().then(function() { showToast('Signed out. See you soon! 👋'); });
+}
+
+// ── Dropdown ─────────────────────────────────────
+function toggleDropdown(e) {
+  e.stopPropagation();
+  document.getElementById('user-dropdown').classList.toggle('open');
+}
+document.addEventListener('click', function() {
+  var dd = document.getElementById('user-dropdown');
+  if (dd) dd.classList.remove('open');
+});
+
+// ── Error helpers ─────────────────────────────────
+function showErr(id, msg) {
+  var el = document.getElementById(id);
+  el.textContent = '⚠️ ' + msg; el.classList.add('show');
+}
+function clearErr(id) {
+  var el = document.getElementById(id);
+  if (el) { el.textContent = ''; el.classList.remove('show'); }
+}
+
+// ── Products ──────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function() {
+  showSkeletons('laptops-grid');
+  showSkeletons('phones-grid');
+  db.collection('products').orderBy('createdAt','desc').onSnapshot(function(snap) {
+    products = snap.docs.map(function(d) { return Object.assign({id:d.id}, d.data()); });
+    renderAll();
+  }, function(err) { showToast('DB error: ' + err.message); });
+});
+
+function renderAll() {
+  var laptops = products.filter(function(p){ return p.category==='laptop'; });
+  var phones  = products.filter(function(p){ return p.category==='phone';  });
+  document.getElementById('hero-total').innerHTML = products.length + '<span>+</span>';
+  document.getElementById('cat-all').textContent    = products.length + ' items';
+  document.getElementById('cat-laptop').textContent = laptops.length + ' items';
+  document.getElementById('cat-phone').textContent  = phones.length  + ' items';
+  if (products.length) {
+    var latest = products[0];
+    document.getElementById('hero-prod-name').textContent  = latest.name;
+    document.getElementById('hero-prod-price').textContent = 'KSh ' + fmt(latest.price);
+    var thumb = document.getElementById('hero-thumb');
+    if (latest.image) {
+      thumb.innerHTML = '<img src="' + latest.image + '" alt="' + latest.name + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
+    }
+  }
+  renderGrid('laptops-grid', laptops, 'laptop');
+  renderGrid('phones-grid',  phones,  'phone');
+  initFadeUp();
+}
+
+function renderGrid(id, items, type) {
+  var el = document.getElementById(id);
+  if (!items.length) {
+    el.innerHTML = '<div class="no-products"><div class="no-prod-icon">' + (type==='laptop'?'💻':'📱') + '</div>' +
+      '<div class="no-prod-title">No ' + (type==='laptop'?'laptops':'phones') + ' yet</div>' +
+      '<div class="no-prod-sub">Products will appear here once added.</div></div>';
+    return;
+  }
+  el.innerHTML = items.map(buildCard).join('');
+}
+
+function showSkeletons(id) {
+  document.getElementById(id).innerHTML = [1,2,3,4].map(function(){
+    return '<div class="skeleton"><div class="sk-img"></div><div class="sk-body"><div class="sk-line"></div><div class="sk-line short"></div></div></div>';
+  }).join('');
+}
+
+function buildCard(p) {
+  var emoji  = p.category === 'laptop' ? '💻' : '📱';
+  var imgHtml = p.image ? '<img src="' + p.image + '" alt="' + p.name + '" onerror="this.parentElement.innerHTML=\'' + emoji + '\';this.parentElement.style.fontSize=\'72px\'">' : emoji;
+  var badge   = (p.badge && p.badge !== 'none') ? '<span class="product-badge badge-' + p.badge + '">' + p.badge.toUpperCase() + '</span>' : '';
+  var price   = p.oldPrice
+    ? '<span class="old">KSh ' + fmt(p.oldPrice) + '</span>KSh ' + fmt(p.price)
+    : 'KSh ' + fmt(p.price);
+  var rcount  = p.reviews > 999 ? '(' + (p.reviews/1000).toFixed(1) + 'K)' : '(' + (p.reviews||0) + ')';
+  var stars   = buildStars(p.rating || 4.5);
+  var safeName = (p.name||'').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  return '<div class="product-card fade-up">' + badge +
+    '<div class="wish-btn" onclick="toggleWish(this)">♡</div>' +
+    '<div class="product-img-wrap">' + imgHtml + '</div>' +
+    '<div class="product-body">' +
+      '<div class="product-brand">' + p.brand + '</div>' +
+      '<div class="product-name">' + p.name + '</div>' +
+      '<div class="stars">' + stars + '<span class="rcount">' + rcount + '</span></div>' +
+      '<div class="product-spec">' + p.spec + '</div>' +
+      '<div class="product-footer">' +
+        '<div class="product-price">' + price + '</div>' +
+        '<button class="add-cart-btn" onclick="addCart(\'' + safeName + '\')">+</button>' +
+      '</div>' +
+    '</div></div>';
+}
+
+function buildStars(r) {
+  r = Math.min(5, Math.max(0, r));
+  return [1,2,3,4,5].map(function(i){
+    return '<span class="' + (i <= Math.round(r) ? 'star' : 'star-e') + '">★</span>';
+  }).join('');
+}
+
+// ── Search ────────────────────────────────────────
+function handleSearch() {
+  var q  = document.getElementById('live-search').value.trim().toLowerCase();
+  var ss = document.getElementById('search-section');
+  var ls = document.getElementById('laptops');
+  var ps = document.getElementById('phones');
+  if (!q) { ss.style.display='none'; ls.style.display=''; ps.style.display=''; return; }
+  ls.style.display = 'none'; ps.style.display = 'none'; ss.style.display = '';
+  var res = products.filter(function(p) {
+    return (p.name||'').toLowerCase().includes(q) ||
+           (p.brand||'').toLowerCase().includes(q) ||
+           (p.spec||'').toLowerCase().includes(q);
+  });
+  document.getElementById('search-count').textContent = res.length + ' result' + (res.length!==1?'s':'') + ' for "' + q + '"';
+  document.getElementById('search-grid').innerHTML = res.length
+    ? res.map(buildCard).join('')
+    : '<div class="no-products"><div class="no-prod-icon">🔍</div><div class="no-prod-title">No results</div><div class="no-prod-sub">Try a different search term.</div></div>';
+  initFadeUp();
+}
+function clearSearch() {
+  document.getElementById('live-search').value = '';
+  document.getElementById('search-section').style.display = 'none';
+  document.getElementById('laptops').style.display = '';
+  document.getElementById('phones').style.display  = '';
+}
+
+// ── Interactions ──────────────────────────────────
+function setFilter(filter, el) {
+  document.querySelectorAll('.cat-item').forEach(function(c){ c.classList.remove('active'); });
+  if (el) el.classList.add('active');
+  clearSearch();
+}
+function addCart(name) {
+  cartCount++;
+  document.getElementById('cart-count').textContent = cartCount;
+  showToast(name + ' added to cart!');
+}
+function toggleWish(btn) {
+  btn.textContent = btn.textContent === '♡' ? '♥' : '♡';
+  btn.style.color = btn.textContent === '♥' ? '#FF4D6A' : '';
+}
+function notify(cat) { showToast('You\'ll be notified when ' + cat + ' launches!'); }
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+function fmt(n) { return Number(n).toLocaleString(); }
+
+// ── Scroll animation ──────────────────────────────
+function initFadeUp() {
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e, i) {
+      if (e.isIntersecting) {
+        setTimeout(function(){ e.target.classList.add('visible'); }, i * 60);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.05 });
+  document.querySelectorAll('.fade-up:not(.visible)').forEach(function(el){ obs.observe(el); });
+}
+window.addEventListener('DOMContentLoaded', initFadeUp);
+</script>
 </body>
 </html>
