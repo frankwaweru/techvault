@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
 <script>
 // ================================================================
 // ✏️  PASTE YOUR FIREBASE CONFIG HERE (same as admin.html)
@@ -23,10 +24,11 @@ const firebaseConfig = {
 // ================================================================
 
 const IS_CONFIGURED = !firebaseConfig.apiKey.includes('PASTE_YOUR');
-let db;
+let db, auth;
 if (IS_CONFIGURED) {
   firebase.initializeApp(firebaseConfig);
-  db = firebase.firestore();
+  db   = firebase.firestore();
+  auth = firebase.auth();
 }
 </script>
 <style>
@@ -63,10 +65,7 @@ nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-co
 .cart-badge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:var(--blue);
   border-radius:50%;font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;
   font-family:'JetBrains Mono',monospace;border:2px solid var(--black);}
-.admin-link{display:inline-flex;align-items:center;gap:6px;padding:0 14px;height:38px;
-  background:rgba(240,168,50,.1);border:1px solid rgba(240,168,50,.25);border-radius:8px;
-  font-size:12px;font-weight:600;color:var(--gold);text-decoration:none;transition:background .2s;}
-.admin-link:hover{background:rgba(240,168,50,.18);}
+
 
 /* ── HERO ── */
 .hero{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 64px);max-height:720px;overflow:hidden;position:relative;}
@@ -248,6 +247,97 @@ footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px
 
 .fade-up{opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s;}
 .fade-up.visible{opacity:1;transform:translateY(0);}
+
+/* ── AUTH NAV STATES ── */
+.signin-btn{display:inline-flex;align-items:center;gap:7px;padding:0 16px;height:38px;
+  background:var(--blue);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;
+  font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:opacity .2s;}
+.signin-btn:hover{opacity:.85;}
+
+.user-pill{display:inline-flex;align-items:center;gap:8px;padding:0 12px;height:38px;
+  background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  cursor:pointer;position:relative;transition:border-color .2s;}
+.user-pill:hover{border-color:var(--blue);}
+.user-avatar{width:26px;height:26px;border-radius:6px;background:var(--blue-glow);
+  border:1px solid rgba(28,126,245,.3);display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:var(--blue-light);}
+.user-name{font-size:13px;font-weight:500;color:var(--white);max-width:110px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.user-caret{font-size:10px;color:var(--muted);}
+
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:8px;min-width:200px;z-index:200;
+  opacity:0;pointer-events:none;transform:translateY(-6px);
+  transition:opacity .18s,transform .18s;}
+.user-dropdown.open{opacity:1;pointer-events:all;transform:translateY(0);}
+.dd-email{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
+  padding:6px 10px 10px;border-bottom:1px solid var(--line);margin-bottom:6px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dd-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;
+  font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;
+  transition:background .15s,color .15s;text-decoration:none;}
+.dd-item:hover{background:var(--surface);color:var(--white);}
+.dd-item.danger{color:var(--danger);}
+.dd-item.danger:hover{background:rgba(255,77,106,.08);}
+.dd-admin{color:var(--gold);}
+.dd-admin:hover{background:rgba(240,168,50,.08) !important;color:var(--gold) !important;}
+
+/* ── AUTH MODAL ── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);
+  backdrop-filter:blur(6px);z-index:500;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-backdrop.open{opacity:1;pointer-events:all;}
+.auth-modal{background:var(--card);border:1px solid var(--line);border-radius:20px;
+  width:100%;max-width:400px;overflow:hidden;
+  transform:translateY(20px) scale(.97);transition:transform .2s;}
+.modal-backdrop.open .auth-modal{transform:translateY(0) scale(1);}
+
+.auth-tabs{display:flex;border-bottom:1px solid var(--line);}
+.auth-tab{flex:1;padding:16px;text-align:center;font-size:13px;font-weight:600;
+  color:var(--muted);cursor:pointer;transition:color .2s,background .2s;border:none;
+  background:var(--surface);font-family:'DM Sans',sans-serif;}
+.auth-tab.active{color:var(--blue-light);background:var(--card);border-bottom:2px solid var(--blue);}
+
+.auth-body{padding:28px;}
+.auth-icon{font-size:32px;text-align:center;margin-bottom:14px;}
+.auth-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;
+  color:var(--white);text-align:center;margin-bottom:4px;}
+.auth-subtitle{font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px;}
+
+.auth-field{margin-bottom:14px;}
+.auth-field label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px;}
+.auth-field input{width:100%;background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;padding:11px 14px;color:var(--white);font-family:'DM Sans',sans-serif;
+  font-size:14px;outline:none;transition:border-color .2s;}
+.auth-field input:focus{border-color:var(--blue);}
+.auth-field input::placeholder{color:var(--dim);}
+
+.auth-error{background:rgba(255,77,106,.1);border:1px solid rgba(255,77,106,.25);
+  border-radius:8px;padding:10px 14px;font-size:12px;color:#FF7A90;
+  margin-bottom:14px;display:none;line-height:1.5;}
+.auth-error.show{display:block;}
+.auth-success{background:rgba(0,201,122,.1);border:1px solid rgba(0,201,122,.25);
+  border-radius:8px;padding:10px 14px;font-size:12px;color:#33DDA1;
+  margin-bottom:14px;display:none;}
+.auth-success.show{display:block;}
+
+.auth-submit{width:100%;padding:13px;background:var(--blue);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;border:none;
+  border-radius:10px;cursor:pointer;transition:opacity .2s;margin-top:4px;}
+.auth-submit:hover{opacity:.87;}
+.auth-submit:disabled{opacity:.45;cursor:not-allowed;}
+.auth-close{position:absolute;top:14px;right:16px;width:28px;height:28px;
+  background:var(--surface);border:1px solid var(--line);border-radius:7px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--muted);transition:color .2s;z-index:1;}
+.auth-close:hover{color:var(--white);}
+.auth-modal-wrap{position:relative;}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;
+  font-size:11px;color:var(--dim);}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--line);}
+
 </style>
 </head>
 <body>
@@ -265,7 +355,18 @@ footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="live-search" placeholder="Search products…" oninput="handleSearch()">
     </div>
-    <a class="admin-link" href="admin.html">⚙️ Admin</a>
+    <!-- AUTH NAV -->
+    <button class="signin-btn" id="signin-nav-btn" onclick="openAuthModal('login')">Sign In</button>
+    <div class="user-pill" id="user-pill" style="display:none" onclick="toggleDropdown()">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <span class="user-name" id="user-name-nav">Account</span>
+      <span class="user-caret">▾</span>
+      <div class="user-dropdown" id="user-dropdown">
+        <div class="dd-email" id="dd-email"></div>
+        <a class="dd-item dd-admin" id="dd-admin-link" href="admin.html" style="display:none">⚙️ Admin Panel</a>
+        <div class="dd-item danger" onclick="doSignOut()">⏏ Sign Out</div>
+      </div>
+    </div>
     <div class="icon-btn" id="cart-btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7A90" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
       <span class="cart-badge" id="cart-count">0</span>
@@ -396,7 +497,7 @@ footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px
     </div>
     <div><div class="footer-heading">Shop</div><ul class="footer-links"><li><a href="#laptops">Laptops</a></li><li><a href="#phones">Phones</a></li><li><a href="#">Deals</a></li><li><a href="#coming-soon">Coming Soon</a></li></ul></div>
     <div><div class="footer-heading">Support</div><ul class="footer-links"><li><a href="#">Help Center</a></li><li><a href="#">Track Order</a></li><li><a href="#">Returns</a></li><li><a href="#">Contact</a></li></ul></div>
-    <div><div class="footer-heading">Company</div><ul class="footer-links"><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="admin.html">Admin Panel</a></li><li><a href="setup.html">Setup Guide</a></li></ul></div>
+    <div><div class="footer-heading">Company</div><ul class="footer-links"><li><a href="#">About</a></li><li><a href="#">Careers</a></li></ul></div>
   </div>
   <div class="footer-bottom">
     <div class="footer-copy">© 2025 TechVault Kenya. All rights reserved.</div>
@@ -479,8 +580,7 @@ function renderEmpty(containerId, type) {
     <div class="no-products" style="grid-column:1/-1">
       <div class="no-prod-icon">${type==='laptop'?'💻':'📱'}</div>
       <div class="no-prod-title">No ${type==='laptop'?'laptops':'phones'} yet</div>
-      <div class="no-prod-sub">Add products from the admin panel — they appear here instantly.</div>
-      <a href="admin.html" class="no-prod-link">⚙️ Go to Admin Panel →</a>
+      <div class="no-prod-sub">Products will appear here once they are added.</div>
     </div>`;
 }
 
@@ -584,5 +684,58 @@ function initScrollAnim() {
   document.querySelectorAll('.fade-up:not(.visible)').forEach(el=>obs.observe(el));
 }
 </script>
+
+<!-- AUTH MODAL -->
+<div class="modal-backdrop" id="auth-backdrop" onclick="handleBackdropClick(event)">
+  <div class="auth-modal auth-modal-wrap">
+    <div class="auth-close" onclick="closeAuthModal()">✕</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Create Account</button>
+    </div>
+
+    <!-- LOGIN PANEL -->
+    <div id="panel-login" class="auth-body">
+      <div class="auth-icon">🔐</div>
+      <div class="auth-title">Welcome Back</div>
+      <div class="auth-subtitle">Sign in to your TechVault account</div>
+      <div class="auth-error" id="login-error"></div>
+      <div class="auth-field">
+        <label>Email address</label>
+        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+      <button class="auth-submit" id="login-submit" onclick="doLogin()">Sign In →</button>
+    </div>
+
+    <!-- REGISTER PANEL -->
+    <div id="panel-register" class="auth-body" style="display:none">
+      <div class="auth-icon">✨</div>
+      <div class="auth-title">Create Account</div>
+      <div class="auth-subtitle">Join TechVault and start shopping</div>
+      <div class="auth-error" id="register-error"></div>
+      <div class="auth-success" id="register-success"></div>
+      <div class="auth-field">
+        <label>Full name</label>
+        <input type="text" id="reg-name" placeholder="Frank Waweru" autocomplete="name">
+      </div>
+      <div class="auth-field">
+        <label>Email address</label>
+        <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="At least 6 characters"
+          onkeydown="if(event.key==='Enter') doRegister()">
+      </div>
+      <button class="auth-submit" id="register-submit" onclick="doRegister()">Create Account →</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

@@ -490,6 +490,12 @@ async function doLogin() {
   btn.disabled = true; txt.textContent = 'Signing in…';
   try {
     await auth.signInWithEmailAndPassword(email, pass);
+    // Register this user as admin in Firestore (safe to run every login)
+    await db.collection('admins').doc(cred.user.uid).set({
+      email: cred.user.email,
+      role: 'admin',
+      lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
     // onAuthStateChanged will handle the rest
   } catch(e) {
     btn.disabled = false; txt.textContent = 'Sign In →';
