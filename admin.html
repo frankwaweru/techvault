@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
 <script>
 // ================================================================
 // ✏️  FIREBASE CONFIG (Firestore for product data)
@@ -34,10 +35,11 @@ const CLOUDINARY_PRESET = "techvault";
 
 const IS_CONFIGURED    = !firebaseConfig.apiKey.includes('PASTE_YOUR');
 const CDN_CONFIGURED   = !CLOUDINARY_CLOUD.includes('PASTE_YOUR');
-let db;
+let db, auth;
 if (IS_CONFIGURED) {
   firebase.initializeApp(firebaseConfig);
-  db = firebase.firestore();
+  db   = firebase.firestore();
+  auth = firebase.auth();
 }
 </script>
 <style>
@@ -238,9 +240,71 @@ body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white)
 
 ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--deep);}
 ::-webkit-scrollbar-thumb{background:var(--dim);border-radius:3px;}
+
+/* ── LOGIN OVERLAY ── */
+.login-overlay{position:fixed;inset:0;background:var(--black);z-index:2000;
+  display:flex;align-items:center;justify-content:center;}
+.login-card{background:var(--card);border:1px solid var(--line);border-radius:20px;
+  padding:48px 44px;width:100%;max-width:420px;position:relative;
+  background-image:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(28,126,245,.08) 0%,transparent 70%);}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;
+  color:var(--white);text-align:center;margin-bottom:6px;}
+.login-logo span{color:var(--blue);}
+.login-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:32px;}
+.login-label{display:block;font-size:12px;font-weight:500;color:var(--muted);
+  margin-bottom:6px;letter-spacing:.3px;}
+.login-input{width:100%;background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;padding:12px 14px;color:var(--white);font-family:'DM Sans',sans-serif;
+  font-size:14px;outline:none;transition:border-color .2s;margin-bottom:14px;}
+.login-input:focus{border-color:var(--blue);}
+.login-input::placeholder{color:var(--dim);}
+.login-btn{width:100%;padding:13px;background:var(--blue);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  border:none;border-radius:10px;cursor:pointer;transition:opacity .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;}
+.login-btn:hover{opacity:.87;}
+.login-btn:disabled{opacity:.5;cursor:not-allowed;}
+.login-error{background:rgba(255,77,106,.1);border:1px solid rgba(255,77,106,.3);
+  border-radius:8px;padding:10px 14px;font-size:13px;color:#FF7A90;
+  margin-bottom:14px;display:none;}
+.login-error.show{display:block;}
+.login-footer{text-align:center;font-size:12px;color:var(--dim);margin-top:20px;}
+.lock-icon{font-size:36px;text-align:center;margin-bottom:20px;}
+
+/* ── LOGOUT BTN ── */
+.logout-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;
+  background:var(--danger-bg);color:var(--danger);font-family:'DM Sans',sans-serif;
+  font-size:12px;font-weight:500;border:1px solid rgba(255,77,106,.25);
+  border-radius:7px;cursor:pointer;transition:background .2s;}
+.logout-btn:hover{background:rgba(255,77,106,.2);}
+
+/* ── USER EMAIL in sidebar ── */
+.auth-email{font-size:11px;color:var(--blue-light);margin-top:2px;
+  font-family:'JetBrains Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
 </style>
 </head>
 <body>
+
+<!-- LOGIN OVERLAY -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-card">
+    <div class="lock-icon">🔐</div>
+    <div class="login-logo">Tech<span>Vault</span></div>
+    <div class="login-sub">Admin access only — sign in to continue</div>
+    <div class="login-error" id="login-error"></div>
+    <label class="login-label">Email address</label>
+    <input class="login-input" type="email" id="login-email" placeholder="admin@example.com" autocomplete="email">
+    <label class="login-label">Password</label>
+    <input class="login-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter') doLogin()">
+    <button class="login-btn" id="login-btn" onclick="doLogin()">
+      <span id="login-btn-text">Sign In →</span>
+    </button>
+    <div class="login-footer">🔒 Secured with Firebase Authentication</div>
+  </div>
+</div>
+
 
 <!-- NOT CONFIGURED OVERLAY -->
 <div class="setup-overlay" id="setup-overlay" style="display:none">
@@ -271,7 +335,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white)
   <div class="sidebar-footer">
     <div class="admin-user">
       <div class="admin-avatar">A</div>
-      <div><div style="font-size:13px;font-weight:500;color:var(--white)">Admin</div><div style="font-size:11px;color:var(--muted)">Store Manager</div></div>
+      <div><div style="font-size:13px;font-weight:500;color:var(--white)">Admin</div><div class="auth-email" id="auth-email-display">not signed in</div></div>
     </div>
   </div>
 </aside>
@@ -282,6 +346,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white)
     <div class="topbar-actions">
       <div class="live-pill"><div class="live-dot"></div>LIVE SYNC</div>
       <a href="index.html" target="_blank" class="btn-ghost">🏪 View Store</a>
+      <button class="logout-btn" onclick="doLogout()">⏏ Sign Out</button>
     </div>
   </header>
 
@@ -397,9 +462,61 @@ let pendingFile = { add: null, edit: null };
 
 window.addEventListener('DOMContentLoaded', () => {
   if (!IS_CONFIGURED) { document.getElementById('setup-overlay').style.display='flex'; return; }
-  subscribeProducts();
-  setupDragDrop('upload-area','img-file','add');
+
+  // Watch auth state — show login or dashboard
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      // ✅ Signed in — show dashboard
+      document.getElementById('login-overlay').style.display = 'none';
+      document.getElementById('auth-email-display').textContent = user.email;
+      subscribeProducts();
+      setupDragDrop('upload-area','img-file','add');
+    } else {
+      // 🔒 Not signed in — show login
+      document.getElementById('login-overlay').style.display = 'flex';
+    }
+  });
 });
+
+/* ── Login ── */
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  const btn   = document.getElementById('login-btn');
+  const txt   = document.getElementById('login-btn-text');
+  const err   = document.getElementById('login-error');
+  err.classList.remove('show');
+  if (!email || !pass) { showLoginError('Please enter your email and password.'); return; }
+  btn.disabled = true; txt.textContent = 'Signing in…';
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+    // onAuthStateChanged will handle the rest
+  } catch(e) {
+    btn.disabled = false; txt.textContent = 'Sign In →';
+    const msgs = {
+      'auth/user-not-found':  'No account found with that email.',
+      'auth/wrong-password':  'Incorrect password. Try again.',
+      'auth/invalid-email':   'Please enter a valid email address.',
+      'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
+      'auth/invalid-credential': 'Incorrect email or password.'
+    };
+    showLoginError(msgs[e.code] || 'Login failed: ' + e.message);
+  }
+}
+
+function showLoginError(msg) {
+  const err = document.getElementById('login-error');
+  err.textContent = '⚠️ ' + msg;
+  err.classList.add('show');
+}
+
+/* ── Logout ── */
+async function doLogout() {
+  if (!confirm('Sign out of TechVault Admin?')) return;
+  await auth.signOut();
+  document.getElementById('auth-email-display').textContent = 'not signed in';
+  showToast('Signed out successfully', 'info');
+}
 
 /* ── Firestore real-time listener ── */
 function subscribeProducts() {
