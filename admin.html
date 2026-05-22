@@ -157,6 +157,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white)
 .cat-pill{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:4px 10px;border-radius:6px;display:inline-block;}
 .cat-laptop{background:var(--blue-glow);color:var(--blue-light);border:1px solid rgba(28,126,245,.2);}
 .cat-phone{background:rgba(155,109,255,.1);color:#BB99FF;border:1px solid rgba(155,109,255,.25);}
+.cat-audio{background:rgba(0,201,122,.1);color:#33DDA1;border:1px solid rgba(0,201,122,.25);}
+.cat-wearable{background:rgba(240,168,50,.1);color:#F0C060;border:1px solid rgba(240,168,50,.25);}
+.cat-monitor{background:rgba(0,212,255,.1);color:#60D4F0;border:1px solid rgba(0,212,255,.25);}
+.cat-gaming{background:rgba(255,77,106,.1);color:#FF8A9E;border:1px solid rgba(255,77,106,.25);}
+.cat-other{background:var(--surface);color:var(--muted);border:1px solid var(--line);}
 .price-cell{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--white);}
 .price-old{font-size:11px;color:var(--dim);text-decoration:line-through;display:block;}
 .badge-pill{font-size:10px;font-weight:600;letter-spacing:.5px;padding:3px 8px;border-radius:5px;display:inline-block;}
@@ -282,6 +287,35 @@ body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white)
 .auth-email{font-size:11px;color:var(--blue-light);margin-top:2px;
   font-family:'JetBrains Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
+
+/* ── MULTI IMAGE UPLOAD ── */
+.multi-img-section{margin-bottom:14px;}
+.img-thumbs-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;min-height:0;}
+.img-thumb{position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;
+  border:1px solid var(--line);flex-shrink:0;background:var(--surface);}
+.img-thumb img{width:100%;height:100%;object-fit:cover;}
+.img-thumb .thumb-del{position:absolute;top:2px;right:2px;width:18px;height:18px;
+  background:rgba(255,77,106,.85);border-radius:4px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;font-size:9px;color:#fff;font-weight:700;
+  opacity:0;transition:opacity .15s;}
+.img-thumb:hover .thumb-del{opacity:1;}
+.img-thumb .thumb-order{position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.6);
+  border-radius:3px;padding:1px 4px;font-size:9px;color:var(--muted);
+  font-family:'JetBrains Mono',monospace;}
+.img-thumb.primary-thumb{border-color:var(--blue);border-width:2px;}
+.img-thumb.primary-thumb .thumb-order{background:var(--blue);color:#fff;}
+.img-upload-area{border:1.5px dashed var(--dim);border-radius:10px;padding:16px;
+  text-align:center;cursor:pointer;transition:border-color .2s,background .2s;
+  position:relative;background:var(--surface);}
+.img-upload-area:hover,.img-upload-area.drag-over{border-color:var(--blue);background:var(--blue-glow);}
+.img-upload-area input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-icon{font-size:20px;margin-bottom:4px;opacity:.5;}
+.upload-text{font-size:12px;color:var(--muted);}
+.upload-hint{font-size:10px;color:var(--dim);margin-top:2px;}
+.upload-progress{height:3px;background:var(--line);border-radius:2px;overflow:hidden;display:none;}
+.upload-progress-bar{height:100%;background:var(--blue);border-radius:2px;width:0%;transition:width .3s;}
+.upload-progress.show{display:block;}
+
 </style>
 </head>
 <body>
@@ -366,7 +400,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white)
       <div class="stat-card"><div class="stat-label">📦 Total Products</div><div class="stat-val blue" id="stat-total">—</div><div class="stat-change" id="stat-sub">connecting…</div></div>
       <div class="stat-card"><div class="stat-label">💻 Laptops</div><div class="stat-val" id="stat-laptops">—</div></div>
       <div class="stat-card"><div class="stat-label">📱 Phones</div><div class="stat-val" id="stat-phones">—</div></div>
-      <div class="stat-card"><div class="stat-label">⚡ On Sale</div><div class="stat-val green" id="stat-sale">—</div></div>
+      <div class="stat-card"><div class="stat-label">🎧 Audio</div><div class="stat-val" id="stat-audio">—</div></div>
     </div>
 
     <div class="two-col">
@@ -393,19 +427,43 @@ body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white)
       <div class="form-panel">
         <div class="form-header"><div class="form-title">➕ Add New Product</div></div>
         <div class="form-body">
-          <div class="img-upload-area" id="upload-area">
-            <input type="file" id="img-file" accept="image/*" onchange="handleFileSelect(this,'add')">
-            <img class="img-preview" id="img-preview-add" alt="">
-            <div id="upload-ph-add"><div class="upload-icon">🖼️</div><div class="upload-text">Drop image or click to upload</div><div class="upload-hint">Uploads to Cloudinary CDN · up to 10MB</div></div>
-            <div class="upload-progress" id="prog-add"><div class="upload-progress-bar" id="bar-add"></div></div>
+          <!-- MULTI-IMAGE UPLOAD -->
+          <div class="multi-img-section">
+            <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">
+              Product Images <span style="color:var(--blue)">*</span>
+              <span style="color:var(--dim);font-weight:400"> · up to 6 images</span>
+            </div>
+            <div class="img-thumbs-row" id="img-thumbs-add"></div>
+            <div class="img-upload-area" id="upload-area">
+              <input type="file" id="img-file" accept="image/*" multiple onchange="handleMultiFiles(this,'add')">
+              <div id="upload-ph-add">
+                <div class="upload-icon">🖼️</div>
+                <div class="upload-text">Drop images or click to upload</div>
+                <div class="upload-hint">Up to 6 images · Cloudinary CDN · 10MB each</div>
+              </div>
+            </div>
+            <div class="upload-progress" id="prog-add" style="margin-top:6px"><div class="upload-progress-bar" id="bar-add"></div></div>
+            <div class="or-div" style="margin-top:12px">or paste image URL and press Enter</div>
+            <div style="display:flex;gap:8px">
+              <input class="url-add-input" type="url" id="img-url" placeholder="https://example.com/image.jpg"
+                onkeydown="if(event.key==='Enter'){addUrlImage('add');event.preventDefault()}"
+                style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;">
+              <button onclick="addUrlImage('add')" style="padding:9px 14px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Add</button>
+            </div>
           </div>
-          <div class="or-div">or paste image URL</div>
-          <div class="field"><label>Image URL</label><input type="url" id="img-url" placeholder="https://…" oninput="previewUrl(this.value,'add')"></div>
           <div class="field"><label>Product Name <span class="req">*</span></label><input type="text" id="prod-name" placeholder='e.g. MacBook Pro 14" M4'></div>
           <div class="field"><label>Brand <span class="req">*</span></label><input type="text" id="prod-brand" placeholder="e.g. Apple, Samsung"></div>
           <div class="frow">
             <div class="field"><label>Category <span class="req">*</span></label>
-              <select id="prod-category"><option value="">Select…</option><option value="laptop">Laptop</option><option value="phone">Phone</option></select></div>
+              <select id="prod-category">
+                <option value="">Select…</option>
+                <option value="laptop">💻 Laptop</option>
+                <option value="phone">📱 Phone</option>
+                <option value="audio">🎧 Audio</option>
+                <option value="wearable">⌚ Wearable</option>
+                <option value="monitor">🖥️ Monitor</option>
+                <option value="gaming">🎮 Gaming</option>
+              </select></div>
             <div class="field"><label>Badge</label>
               <select id="prod-badge"><option value="none">None</option><option value="new">New</option><option value="hot">Hot</option><option value="sale">Sale</option></select></div>
           </div>
@@ -433,18 +491,40 @@ body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white)
   <div class="modal">
     <div class="modal-header"><div class="modal-title">✏️ Edit Product</div><div class="modal-close" onclick="closeModal()">✕</div></div>
     <div class="modal-body">
-      <div class="img-upload-area" id="edit-upload-area">
-        <input type="file" id="edit-img-file" accept="image/*" onchange="handleFileSelect(this,'edit')">
-        <img class="img-preview" id="img-preview-edit" alt="">
-        <div id="upload-ph-edit"><div class="upload-icon">🖼️</div><div class="upload-text">Drop or click to change image</div><div class="upload-hint">Uploads to Cloudinary CDN</div></div>
-        <div class="upload-progress" id="prog-edit"><div class="upload-progress-bar" id="bar-edit"></div></div>
+      <!-- MULTI-IMAGE UPLOAD EDIT -->
+      <div class="multi-img-section">
+        <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">
+          Product Images <span style="color:var(--dim);font-weight:400"> · up to 6 · drag to reorder</span>
+        </div>
+        <div class="img-thumbs-row" id="img-thumbs-edit"></div>
+        <div class="img-upload-area" id="edit-upload-area">
+          <input type="file" id="edit-img-file" accept="image/*" multiple onchange="handleMultiFiles(this,'edit')">
+          <div id="upload-ph-edit">
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-text">Drop images or click to add more</div>
+            <div class="upload-hint">Uploads to Cloudinary CDN</div>
+          </div>
+        </div>
+        <div class="upload-progress" id="prog-edit" style="margin-top:6px"><div class="upload-progress-bar" id="bar-edit"></div></div>
+        <div class="or-div" style="margin-top:10px">or paste image URL</div>
+        <div style="display:flex;gap:8px">
+          <input type="url" id="edit-img-url" placeholder="https://…"
+            onkeydown="if(event.key==='Enter'){addUrlImage('edit');event.preventDefault()}"
+            style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;">
+          <button onclick="addUrlImage('edit')" style="padding:9px 14px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Add</button>
+        </div>
       </div>
-      <div class="or-div">or paste image URL</div>
-      <div class="field"><label>Image URL</label><input type="url" id="edit-img-url" placeholder="https://…" oninput="previewUrl(this.value,'edit')"></div>
       <div class="field"><label>Product Name <span class="req">*</span></label><input type="text" id="edit-name"></div>
       <div class="field"><label>Brand</label><input type="text" id="edit-brand"></div>
       <div class="frow">
-        <div class="field"><label>Category</label><select id="edit-category"><option value="laptop">Laptop</option><option value="phone">Phone</option></select></div>
+        <div class="field"><label>Category</label><select id="edit-category">
+          <option value="laptop">💻 Laptop</option>
+          <option value="phone">📱 Phone</option>
+          <option value="audio">🎧 Audio</option>
+          <option value="wearable">⌚ Wearable</option>
+          <option value="monitor">🖥️ Monitor</option>
+          <option value="gaming">🎮 Gaming</option>
+        </select></div>
         <div class="field"><label>Badge</label><select id="edit-badge"><option value="none">None</option><option value="new">New</option><option value="hot">Hot</option><option value="sale">Sale</option></select></div>
       </div>
       <div class="frow">
@@ -469,10 +549,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white)
 <script>
 let products   = [];
 let editDocId  = null;
-let pendingFile = { add: null, edit: null };
+let imgQueue   = { add: [], edit: [] };  // Multi-image queues
 
 window.addEventListener('DOMContentLoaded', () => {
   if (!IS_CONFIGURED) { document.getElementById('setup-overlay').style.display='flex'; return; }
+  setupDragDrop('upload-area','img-file','add');
+  setupDragDrop('edit-upload-area','edit-img-file','edit');
 
   // Watch auth state — only grant access if UID exists in admins collection
   auth.onAuthStateChanged(async user => {
@@ -557,12 +639,12 @@ function subscribeProducts() {
   db.collection('products').orderBy('createdAt','desc').onSnapshot(snap => {
     products = snap.docs.map(d => ({id:d.id,...d.data()}));
     const n  = products.length;
-    document.getElementById('stat-total').textContent   = n;
-    document.getElementById('stat-laptops').textContent = products.filter(p=>p.category==='laptop').length;
-    document.getElementById('stat-phones').textContent  = products.filter(p=>p.category==='phone').length;
-    document.getElementById('stat-sale').textContent    = products.filter(p=>p.badge==='sale').length;
-    document.getElementById('stat-sub').textContent     = n + ' product' + (n!==1?'s':'') + ' in database';
-    document.getElementById('nav-count').textContent    = n;
+    document.getElementById('stat-total').textContent    = n;
+    document.getElementById('stat-laptops').textContent  = products.filter(p=>p.category==='laptop').length;
+    document.getElementById('stat-phones').textContent   = products.filter(p=>p.category==='phone').length;
+    document.getElementById('stat-audio').textContent    = products.filter(p=>['audio','wearable','monitor','gaming'].includes(p.category)).length;
+    document.getElementById('stat-sub').textContent      = n + ' product' + (n!==1?'s':'') + ' in database';
+    document.getElementById('nav-count').textContent     = n;
     renderTable();
   }, err => showToast('DB error: '+err.message,'error'));
 }
@@ -579,7 +661,9 @@ function renderTable() {
   tbody.innerHTML = rows.map(p => {
     const img  = p.image ? `<div class="prod-row-img"><img src="${p.image}" onerror="this.parentElement.innerHTML='${p.category==='laptop'?'💻':'📱'}'"></div>`
                          : `<div class="prod-row-img">${p.category==='laptop'?'💻':'📱'}</div>`;
-    const cat  = `<span class="cat-pill ${p.category==='laptop'?'cat-laptop':'cat-phone'}">${p.category==='laptop'?'Laptop':'Phone'}</span>`;
+    const catLabels = {laptop:'💻 Laptop',phone:'📱 Phone',audio:'🎧 Audio',wearable:'⌚ Wearable',monitor:'🖥️ Monitor',gaming:'🎮 Gaming'};
+    const catClass  = {laptop:'cat-laptop',phone:'cat-phone',audio:'cat-audio',wearable:'cat-wearable',monitor:'cat-monitor',gaming:'cat-gaming'};
+    const cat  = `<span class="cat-pill ${catClass[p.category]||'cat-other'}">${catLabels[p.category]||p.category}</span>`;
     const bdg  = (p.badge&&p.badge!=='none') ? `<span class="badge-pill bp-${p.badge}">${p.badge.toUpperCase()}</span>` : `<span class="badge-none">—</span>`;
     const prc  = p.oldPrice ? `<div class="price-cell"><span class="price-old">KSh ${fmt(p.oldPrice)}</span>KSh ${fmt(p.price)}</div>` : `<div class="price-cell">KSh ${fmt(p.price)}</div>`;
     const ref  = (p.imageRef||'').replace(/'/g,"\\'");
@@ -594,71 +678,100 @@ function renderTable() {
   }).join('');
 }
 
-/* ── Image helpers ── */
-function handleFileSelect(input, mode) {
-  const file = input.files[0]; if(!file) return;
-  if(file.size > 10*1024*1024){showToast('Max 10MB','error');return;}
-  pendingFile[mode] = file;
-  showPreview(URL.createObjectURL(file), mode);
-  if(mode==='add') document.getElementById('img-url').value='';
-  else document.getElementById('edit-img-url').value='';
-}
-function previewUrl(url, mode) {
-  if(!url) return;
-  showPreview(url, mode);
-  pendingFile[mode] = null;
-}
-function showPreview(src, mode) {
-  const prev = document.getElementById('img-preview-'+mode);
-  const ph   = document.getElementById('upload-ph-'+mode);
-  prev.src = src; prev.classList.add('show');
-  ph.style.display = 'none';
-}
-function resetPreview(mode) {
-  const prev = document.getElementById('img-preview-'+mode);
-  const ph   = document.getElementById('upload-ph-'+mode);
-  prev.src=''; prev.classList.remove('show'); ph.style.display='';
-  pendingFile[mode] = null;
+/* ── Multi-Image helpers ── */
+function handleMultiFiles(input, mode) {
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    if(file.size > 10*1024*1024){ showToast('Max 10MB per image','error'); return; }
+    if(imgQueue[mode].length >= 6){ showToast('Max 6 images per product','info'); return; }
+    // Preview immediately with blob URL, upload happens on save
+    imgQueue[mode].push({ url: URL.createObjectURL(file), file, ref: null, uploaded: false });
+    renderThumbs(mode);
+  });
+  input.value = '';
 }
 
-async function uploadFile(file, mode) {
-  if (!CDN_CONFIGURED) throw new Error('Cloudinary not configured — add your cloud name and preset');
-  const prog = document.getElementById('prog-'+mode);
-  const bar  = document.getElementById('bar-'+mode);
-  if (prog) prog.classList.add('show');
+function addUrlImage(mode) {
+  const inputId = mode === 'add' ? 'img-url' : 'edit-img-url';
+  const url = document.getElementById(inputId).value.trim();
+  if (!url) return;
+  if (imgQueue[mode].length >= 6){ showToast('Max 6 images per product','info'); return; }
+  imgQueue[mode].push({ url, file: null, ref: null, uploaded: true });
+  renderThumbs(mode);
+  document.getElementById(inputId).value = '';
+}
+
+function renderThumbs(mode) {
+  const row = document.getElementById('img-thumbs-' + mode);
+  if (!row) return;
+  row.innerHTML = imgQueue[mode].map((img, i) => `
+    <div class="img-thumb ${i===0?'primary-thumb':''}" title="${i===0?'Primary image':'Image '+(i+1)}">
+      <img src="${img.url}" alt="img ${i+1}" onerror="this.src=''">
+      <div class="thumb-del" onclick="removeThumb('${mode}',${i})">✕</div>
+      <div class="thumb-order">${i===0?'★':'#'+(i+1)}</div>
+    </div>`).join('');
+  // Show/hide upload placeholder
+  const ph = document.getElementById('upload-ph-' + mode);
+  if (ph) ph.style.opacity = imgQueue[mode].length >= 6 ? '0.3' : '1';
+}
+
+function removeThumb(mode, idx) {
+  imgQueue[mode].splice(idx, 1);
+  renderThumbs(mode);
+}
+// Legacy stubs kept for safety
+function resetPreview(mode) {
+  imgQueue[mode] = [];
+  renderThumbs(mode);
+}
+
+async function uploadSingleFile(file) {
+  if (!CDN_CONFIGURED) throw new Error('Cloudinary not configured');
   const formData = new FormData();
   formData.append('file', file);
   formData.append('upload_preset', CLOUDINARY_PRESET);
   return new Promise((res, rej) => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`);
-    xhr.upload.onprogress = e => {
-      if (e.lengthComputable && bar)
-        bar.style.width = (e.loaded / e.total * 100).toFixed(0) + '%';
-    };
     xhr.onload = () => {
-      if (prog) { prog.classList.remove('show'); if(bar) bar.style.width='0%'; }
       if (xhr.status === 200) {
         const data = JSON.parse(xhr.responseText);
         res({ url: data.secure_url, ref: data.public_id });
-      } else {
-        rej(new Error('Cloudinary upload failed: ' + xhr.status));
-      }
+      } else { rej(new Error('Upload failed: ' + xhr.status)); }
     };
-    xhr.onerror = () => { if(prog) prog.classList.remove('show'); rej(new Error('Network error')); };
+    xhr.onerror = () => rej(new Error('Network error'));
     xhr.send(formData);
   });
 }
 
-async function resolveImage(mode, currentUrl, currentRef) {
-  if(pendingFile[mode]) {
-    showToast('Uploading to Cloudinary…','uploading');
-    // Note: Cloudinary images are not deleted on update (use Cloudinary dashboard to manage)
-    return await uploadFile(pendingFile[mode], mode);
+// Upload all pending files in a queue, show progress
+async function uploadQueue(mode) {
+  const queue = imgQueue[mode];
+  const prog  = document.getElementById('prog-'+mode);
+  const bar   = document.getElementById('bar-'+mode);
+  let uploaded = 0;
+  const total  = queue.filter(i => !i.uploaded && i.file).length;
+  if (total > 0 && prog) prog.classList.add('show');
+  for (let i = 0; i < queue.length; i++) {
+    if (!queue[i].uploaded && queue[i].file) {
+      showToast(`Uploading image ${uploaded+1} of ${total}…`, 'uploading');
+      const result = await uploadSingleFile(queue[i].file);
+      queue[i].url = result.url;
+      queue[i].ref = result.ref;
+      queue[i].uploaded = true;
+      uploaded++;
+      if (bar) bar.style.width = (uploaded/total*100) + '%';
+    }
   }
-  const urlInput = document.getElementById(mode==='add'?'img-url':'edit-img-url').value.trim();
-  if(urlInput) return {url: urlInput, ref: null};
-  return {url: currentUrl||null, ref: currentRef||null};
+  if (prog) { prog.classList.remove('show'); if(bar) bar.style.width='0%'; }
+  return queue.map(i => ({ url: i.url, ref: i.ref }));
+}
+
+// resolveImages: uploads pending files and returns final images array
+async function resolveImages(mode, existingImages) {
+  // If nothing queued, keep existing
+  if (imgQueue[mode].length === 0) return existingImages || [];
+  return await uploadQueue(mode);
 }
 
 /* ── Add product ── */
@@ -669,19 +782,24 @@ async function addProduct() {
   const price= document.getElementById('prod-price').value;
   const spec = document.getElementById('prod-spec').value.trim();
   if(!name||!brand||!cat||!price||!spec){showToast('Fill all required fields','error');return;}
+  if(imgQueue.add.length===0){showToast('Add at least one product image','error');return;}
   const btn = document.getElementById('add-btn');
-  btn.disabled=true; btn.textContent='⏳ Saving…';
+  btn.disabled=true; btn.textContent='⏳ Uploading…';
   try {
-    const {url,ref} = await resolveImage('add',null,null);
+    const images = await resolveImages('add', []);
+    // Primary image = first in array (backward compat)
     await db.collection('products').add({
-      name,brand,category:cat,
-      price:Number(price),
-      oldPrice:document.getElementById('prod-old-price').value?Number(document.getElementById('prod-old-price').value):null,
-      spec,badge:document.getElementById('prod-badge').value||'none',
-      rating:parseFloat(document.getElementById('prod-rating').value)||4.5,
-      reviews:parseInt(document.getElementById('prod-reviews').value)||0,
-      image:url, imageRef:ref,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      name, brand, category:cat,
+      price:     Number(price),
+      oldPrice:  document.getElementById('prod-old-price').value ? Number(document.getElementById('prod-old-price').value) : null,
+      spec,
+      badge:     document.getElementById('prod-badge').value||'none',
+      rating:    parseFloat(document.getElementById('prod-rating').value)||4.5,
+      reviews:   parseInt(document.getElementById('prod-reviews').value)||0,
+      images,                          // array of {url, ref}
+      image:     images[0]?.url||null, // primary (backward compat)
+      imageRef:  images[0]?.ref||null,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     clearForm();
     showToast(`"${name}" added!`,'success');
@@ -695,7 +813,8 @@ function clearForm() {
   document.getElementById('prod-category').value='';
   document.getElementById('prod-badge').value='none';
   document.getElementById('img-file').value='';
-  resetPreview('add');
+  imgQueue.add = [];
+  renderThumbs('add');
 }
 
 /* ── Delete ── */
@@ -711,40 +830,53 @@ async function delProduct(id, name, imageRef) {
 /* ── Edit ── */
 function openEdit(docId) {
   const p = products.find(x=>x.id===docId); if(!p) return;
-  editDocId = docId; pendingFile.edit = null;
-  document.getElementById('edit-name').value     = p.name||'';
-  document.getElementById('edit-brand').value    = p.brand||'';
-  document.getElementById('edit-category').value = p.category||'laptop';
-  document.getElementById('edit-badge').value    = p.badge||'none';
-  document.getElementById('edit-price').value    = p.price||'';
-  document.getElementById('edit-old-price').value= p.oldPrice||'';
-  document.getElementById('edit-spec').value     = p.spec||'';
-  document.getElementById('edit-rating').value   = p.rating||'';
-  document.getElementById('edit-reviews').value  = p.reviews||'';
-  document.getElementById('edit-img-url').value  = '';
-  document.getElementById('edit-img-file').value = '';
-  if(p.image) showPreview(p.image,'edit'); else resetPreview('edit');
+  editDocId = docId;
+  document.getElementById('edit-name').value      = p.name||'';
+  document.getElementById('edit-brand').value     = p.brand||'';
+  document.getElementById('edit-category').value  = p.category||'laptop';
+  document.getElementById('edit-badge').value     = p.badge||'none';
+  document.getElementById('edit-price').value     = p.price||'';
+  document.getElementById('edit-old-price').value = p.oldPrice||'';
+  document.getElementById('edit-spec').value      = p.spec||'';
+  document.getElementById('edit-rating').value    = p.rating||'';
+  document.getElementById('edit-reviews').value   = p.reviews||'';
+  document.getElementById('edit-img-url').value   = '';
+  document.getElementById('edit-img-file').value  = '';
+  // Load existing images into queue
+  if (p.images && p.images.length) {
+    imgQueue.edit = p.images.map(img => ({ url: img.url, ref: img.ref, file: null, uploaded: true }));
+  } else if (p.image) {
+    imgQueue.edit = [{ url: p.image, ref: p.imageRef||null, file: null, uploaded: true }];
+  } else {
+    imgQueue.edit = [];
+  }
+  renderThumbs('edit');
   document.getElementById('edit-modal').classList.add('show');
 }
-function closeModal(){ document.getElementById('edit-modal').classList.remove('show'); editDocId=null; pendingFile.edit=null; }
+function closeModal(){
+  document.getElementById('edit-modal').classList.remove('show');
+  editDocId=null; imgQueue.edit=[];
+}
 async function saveEdit() {
   if(!editDocId) return;
-  const p = products.find(x=>x.id===editDocId);
+  const p   = products.find(x=>x.id===editDocId);
   const btn = document.getElementById('save-btn');
   btn.disabled=true; btn.textContent='⏳ Saving…';
   try {
-    const {url,ref} = await resolveImage('edit', p.image, p.imageRef);
+    const images = await resolveImages('edit', p.images || (p.image ? [{url:p.image,ref:p.imageRef||null}] : []));
     await db.collection('products').doc(editDocId).update({
-      name:    document.getElementById('edit-name').value.trim(),
-      brand:   document.getElementById('edit-brand').value.trim(),
-      category:document.getElementById('edit-category').value,
-      badge:   document.getElementById('edit-badge').value,
-      price:   Number(document.getElementById('edit-price').value),
-      oldPrice:document.getElementById('edit-old-price').value?Number(document.getElementById('edit-old-price').value):null,
-      spec:    document.getElementById('edit-spec').value.trim(),
-      rating:  parseFloat(document.getElementById('edit-rating').value)||4.5,
-      reviews: parseInt(document.getElementById('edit-reviews').value)||0,
-      image:url, imageRef:ref,
+      name:     document.getElementById('edit-name').value.trim(),
+      brand:    document.getElementById('edit-brand').value.trim(),
+      category: document.getElementById('edit-category').value,
+      badge:    document.getElementById('edit-badge').value,
+      price:    Number(document.getElementById('edit-price').value),
+      oldPrice: document.getElementById('edit-old-price').value ? Number(document.getElementById('edit-old-price').value) : null,
+      spec:     document.getElementById('edit-spec').value.trim(),
+      rating:   parseFloat(document.getElementById('edit-rating').value)||4.5,
+      reviews:  parseInt(document.getElementById('edit-reviews').value)||0,
+      images,
+      image:    images[0]?.url||null,
+      imageRef: images[0]?.ref||null,
       updatedAt:firebase.firestore.FieldValue.serverTimestamp()
     });
     closeModal();

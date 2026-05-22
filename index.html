@@ -269,6 +269,29 @@ footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px
 
 .fade-up{opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s;}
 .fade-up.visible{opacity:1;transform:translateY(0);}
+
+/* ── PRODUCT IMAGE CAROUSEL ── */
+.carousel{position:relative;height:200px;overflow:hidden;background:var(--surface);cursor:grab;}
+.carousel:active{cursor:grabbing;}
+.carousel-track{display:flex;height:100%;transition:transform .4s cubic-bezier(.4,0,.2,1);will-change:transform;}
+.carousel-slide{min-width:100%;height:100%;flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center;font-size:72px;}
+.carousel-slide img{width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none;}
+.carousel-slide::after{content:'';position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(to top,var(--card),transparent);}
+.carousel-dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:3;}
+.carousel-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);transition:background .2s,width .2s;cursor:pointer;}
+.carousel-dot.active{background:#fff;width:16px;border-radius:3px;}
+.carousel-btn{position:absolute;top:50%;transform:translateY(-50%);z-index:3;
+  width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.55);
+  border:1px solid rgba(255,255,255,.15);color:#fff;font-size:12px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  opacity:0;transition:opacity .2s;}
+.carousel-btn.prev{left:8px;}
+.carousel-btn.next{right:8px;}
+.product-card:hover .carousel-btn{opacity:1;}
+.img-count-badge{position:absolute;top:10px;right:10px;z-index:3;
+  background:rgba(0,0,0,.6);border-radius:5px;padding:2px 7px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,.8);}
+
 </style>
 </head>
 <body>
@@ -280,7 +303,7 @@ footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px
     <li><a href="#" class="active">Home</a></li>
     <li><a href="#laptops">Laptops</a></li>
     <li><a href="#phones">Phones</a></li>
-    <li><a href="#coming-soon">More</a></li>
+    <li><a href="#audio">More</a></li>
   </ul>
   <div class="nav-right">
     <div class="search-bar">
@@ -352,9 +375,18 @@ footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px
       <div class="cat-icon">📱</div><div class="cat-name">Phones</div>
       <div class="cat-count" id="cat-phone">0 items</div>
     </a>
-    <a href="#coming-soon" class="cat-item"><div class="cat-icon">🎧</div><div class="cat-name">Audio</div><span class="cat-soon">Soon</span></a>
-    <a href="#coming-soon" class="cat-item"><div class="cat-icon">⌚</div><div class="cat-name">Wearables</div><span class="cat-soon">Soon</span></a>
-    <a href="#coming-soon" class="cat-item"><div class="cat-icon">🎮</div><div class="cat-name">Gaming</div><span class="cat-soon">Soon</span></a>
+    <a href="#audio" class="cat-item" onclick="setFilter('audio',this)">
+      <div class="cat-icon">🎧</div><div class="cat-name">Audio</div>
+      <div class="cat-count" id="cat-audio">0 items</div>
+    </a>
+    <a href="#wearables" class="cat-item" onclick="setFilter('wearable',this)">
+      <div class="cat-icon">⌚</div><div class="cat-name">Wearables</div>
+      <div class="cat-count" id="cat-wearable">0 items</div>
+    </a>
+    <a href="#gaming" class="cat-item" onclick="setFilter('gaming',this)">
+      <div class="cat-icon">🎮</div><div class="cat-name">Gaming</div>
+      <div class="cat-count" id="cat-gaming">0 items</div>
+    </a>
   </div>
 </div>
 
@@ -396,15 +428,40 @@ footer{background:var(--deep);border-top:1px solid var(--line);padding:60px 72px
   <div class="product-grid" id="search-grid"></div>
 </section>
 
-<!-- COMING SOON -->
-<section id="coming-soon" class="coming-soon">
-  <div class="section-header fade-up"><div><div class="section-title">More Products</div><div class="section-sub">Expanding our catalogue</div></div></div>
-  <div class="soon-grid">
-    <div class="soon-card fade-up"><span class="soon-icon">🎧</span><div class="soon-name">Audio &amp; Headphones</div><div class="soon-desc">ANC headphones, earbuds and speakers.</div><button class="notify-btn" onclick="notify('Audio')">🔔 Notify Me</button></div>
-    <div class="soon-card fade-up"><span class="soon-icon">⌚</span><div class="soon-name">Wearables</div><div class="soon-desc">Smartwatches and fitness trackers.</div><button class="notify-btn" onclick="notify('Wearables')">🔔 Notify Me</button></div>
-    <div class="soon-card fade-up"><span class="soon-icon">🖥️</span><div class="soon-name">Monitors</div><div class="soon-desc">4K and ultra-wide displays.</div><button class="notify-btn" onclick="notify('Monitors')">🔔 Notify Me</button></div>
-    <div class="soon-card fade-up"><span class="soon-icon">🎮</span><div class="soon-name">Gaming</div><div class="soon-desc">Consoles and accessories.</div><button class="notify-btn" onclick="notify('Gaming')">🔔 Notify Me</button></div>
+<!-- AUDIO -->
+<section id="audio">
+  <div class="section-header fade-up">
+    <div><div class="section-title">Audio &amp; Headphones</div><div class="section-sub">ANC headphones, earbuds, speakers and hi-fi audio gear</div></div>
+    <a href="#" class="section-link">View all →</a>
   </div>
+  <div id="audio-grid" class="product-grid"></div>
+</section>
+
+<!-- WEARABLES -->
+<section id="wearables">
+  <div class="section-header fade-up">
+    <div><div class="section-title">Wearables</div><div class="section-sub">Smartwatches, fitness trackers and AR glasses</div></div>
+    <a href="#" class="section-link">View all →</a>
+  </div>
+  <div id="wearables-grid" class="product-grid"></div>
+</section>
+
+<!-- MONITORS -->
+<section id="monitors">
+  <div class="section-header fade-up">
+    <div><div class="section-title">Monitors &amp; Displays</div><div class="section-sub">4K, OLED and ultra-wide monitors for work and gaming</div></div>
+    <a href="#" class="section-link">View all →</a>
+  </div>
+  <div id="monitors-grid" class="product-grid"></div>
+</section>
+
+<!-- GAMING -->
+<section id="gaming">
+  <div class="section-header fade-up">
+    <div><div class="section-title">Gaming</div><div class="section-sub">Consoles, controllers, peripherals and gaming accessories</div></div>
+    <a href="#" class="section-link">View all →</a>
+  </div>
+  <div id="gaming-grid" class="product-grid"></div>
 </section>
 
 <!-- FEATURES -->
@@ -665,31 +722,59 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
 function renderAll() {
-  var laptops = products.filter(function(p){ return p.category==='laptop'; });
-  var phones  = products.filter(function(p){ return p.category==='phone';  });
+  var laptops   = products.filter(function(p){ return p.category==='laptop'; });
+  var phones    = products.filter(function(p){ return p.category==='phone'; });
+  var audio     = products.filter(function(p){ return p.category==='audio'; });
+  var wearables = products.filter(function(p){ return p.category==='wearable'; });
+  var monitors  = products.filter(function(p){ return p.category==='monitor'; });
+  var gaming    = products.filter(function(p){ return p.category==='gaming'; });
+
   document.getElementById('hero-total').innerHTML = products.length + '<span>+</span>';
-  document.getElementById('cat-all').textContent    = products.length + ' items';
-  document.getElementById('cat-laptop').textContent = laptops.length + ' items';
-  document.getElementById('cat-phone').textContent  = phones.length  + ' items';
+  document.getElementById('cat-all').textContent      = products.length + ' items';
+  document.getElementById('cat-laptop').textContent   = laptops.length   + ' items';
+  document.getElementById('cat-phone').textContent    = phones.length    + ' items';
+  document.getElementById('cat-audio').textContent    = audio.length     + ' items';
+  document.getElementById('cat-wearable').textContent = wearables.length + ' items';
+  document.getElementById('cat-gaming').textContent   = gaming.length    + ' items';
+
   if (products.length) {
     var latest = products[0];
     document.getElementById('hero-prod-name').textContent  = latest.name;
     document.getElementById('hero-prod-price').textContent = 'KSh ' + fmt(latest.price);
     var thumb = document.getElementById('hero-thumb');
-    if (latest.image) {
-      thumb.innerHTML = '<img src="' + latest.image + '" alt="' + latest.name + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
+    var imgs  = latest.images && latest.images.length ? latest.images : (latest.image ? [{url:latest.image}] : []);
+    if (imgs.length) {
+      thumb.innerHTML = '<img src="' + imgs[0].url + '" alt="' + latest.name + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
     }
   }
-  renderGrid('laptops-grid', laptops, 'laptop');
-  renderGrid('phones-grid',  phones,  'phone');
+
+  renderGrid('laptops-grid',   laptops,   'laptop');
+  renderGrid('phones-grid',    phones,    'phone');
+  renderGrid('audio-grid',     audio,     'audio');
+  renderGrid('wearables-grid', wearables, 'wearable');
+  renderGrid('monitors-grid',  monitors,  'monitor');
+  renderGrid('gaming-grid',    gaming,    'gaming');
+
   initFadeUp();
+  setTimeout(startAutoSlides, 600);
 }
 
+var CAT_META = {
+  laptop:   { icon: '💻', label: 'laptops' },
+  phone:    { icon: '📱', label: 'phones' },
+  audio:    { icon: '🎧', label: 'audio products' },
+  wearable: { icon: '⌚', label: 'wearables' },
+  monitor:  { icon: '🖥️', label: 'monitors' },
+  gaming:   { icon: '🎮', label: 'gaming products' }
+};
+
 function renderGrid(id, items, type) {
-  var el = document.getElementById(id);
+  var el   = document.getElementById(id); if (!el) return;
+  var meta = CAT_META[type] || { icon: '📦', label: type };
   if (!items.length) {
-    el.innerHTML = '<div class="no-products"><div class="no-prod-icon">' + (type==='laptop'?'💻':'📱') + '</div>' +
-      '<div class="no-prod-title">No ' + (type==='laptop'?'laptops':'phones') + ' yet</div>' +
+    el.innerHTML = '<div class="no-products">' +
+      '<div class="no-prod-icon">' + meta.icon + '</div>' +
+      '<div class="no-prod-title">No ' + meta.label + ' yet</div>' +
       '<div class="no-prod-sub">Products will appear here once added.</div></div>';
     return;
   }
@@ -703,18 +788,48 @@ function showSkeletons(id) {
 }
 
 function buildCard(p) {
-  var emoji  = p.category === 'laptop' ? '💻' : '📱';
-  var imgHtml = p.image ? '<img src="' + p.image + '" alt="' + p.name + '" onerror="this.parentElement.innerHTML=\'' + emoji + '\';this.parentElement.style.fontSize=\'72px\'">' : emoji;
-  var badge   = (p.badge && p.badge !== 'none') ? '<span class="product-badge badge-' + p.badge + '">' + p.badge.toUpperCase() + '</span>' : '';
-  var price   = p.oldPrice
+  var emoji    = p.category === 'laptop' ? '💻' : '📱';
+  var images   = (p.images && p.images.length) ? p.images : (p.image ? [{url:p.image}] : []);
+  var badge    = (p.badge && p.badge !== 'none') ? '<span class="product-badge badge-' + p.badge + '">' + p.badge.toUpperCase() + '</span>' : '';
+  var price    = p.oldPrice
     ? '<span class="old">KSh ' + fmt(p.oldPrice) + '</span>KSh ' + fmt(p.price)
     : 'KSh ' + fmt(p.price);
-  var rcount  = p.reviews > 999 ? '(' + (p.reviews/1000).toFixed(1) + 'K)' : '(' + (p.reviews||0) + ')';
-  var stars   = buildStars(p.rating || 4.5);
-  var safeName = (p.name||'').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-  return '<div class="product-card fade-up">' + badge +
-    '<div class="wish-btn" onclick="toggleWish(this)">♡</div>' +
-    '<div class="product-img-wrap">' + imgHtml + '</div>' +
+  var rcount   = p.reviews > 999 ? '(' + (p.reviews/1000).toFixed(1) + 'K)' : '(' + (p.reviews||0) + ')';
+  var stars    = buildStars(p.rating || 4.5);
+  var safeName = (p.name||'').replace(/'/g, "\\'").replace(/"/g, '');
+  var cardId   = 'card-' + (p.id || Math.random().toString(36).slice(2));
+
+  var slides = '';
+  if (!images.length) {
+    slides = '<div class="carousel-slide">' + emoji + '</div>';
+  } else {
+    images.forEach(function(img) {
+      slides += '<div class="carousel-slide"><img src="' + img.url + '" alt="' + (p.name||'') + '" loading="lazy"></div>';
+    });
+  }
+
+  var dots = '';
+  var controls = '';
+  if (images.length > 1) {
+    images.forEach(function(_, i) {
+      dots += '<div class="carousel-dot ' + (i===0?'active':'') + '" onclick="goSlide(\'' + cardId + '\',' + i + ',event)"></div>';
+    });
+    controls =
+      '<div class="carousel-btn prev" onclick="prevSlide(\'' + cardId + '\',event)">&#8249;</div>' +
+      '<div class="carousel-btn next" onclick="nextSlide(\'' + cardId + '\',event)">&#8250;</div>' +
+      '<div class="img-count-badge">' + images.length + ' \uD83D\uDDBC</div>' +
+      '<div class="carousel-dots">' + dots + '</div>';
+  }
+
+  return '<div class="product-card fade-up" id="' + cardId + '" data-slides="' + images.length + '" data-current="0">' +
+    badge +
+    '<div class="wish-btn" onclick="toggleWish(this)">&#9825;</div>' +
+    '<div class="carousel"' +
+      ' onmousedown="startDrag(event,\'' + cardId + '\')"' +
+      ' ontouchstart="startDrag(event,\'' + cardId + '\')">' +
+      '<div class="carousel-track" id="track-' + cardId + '">' + slides + '</div>' +
+      controls +
+    '</div>' +
     '<div class="product-body">' +
       '<div class="product-brand">' + p.brand + '</div>' +
       '<div class="product-name">' + p.name + '</div>' +
@@ -765,6 +880,16 @@ function setFilter(filter, el) {
   document.querySelectorAll('.cat-item').forEach(function(c){ c.classList.remove('active'); });
   if (el) el.classList.add('active');
   clearSearch();
+  // Scroll to the right section
+  var sectionMap = {
+    laptop: 'laptops', phone: 'phones',
+    audio: 'audio', wearable: 'wearables',
+    monitor: 'monitors', gaming: 'gaming'
+  };
+  if (filter !== 'all' && sectionMap[filter]) {
+    var sec = document.getElementById(sectionMap[filter]);
+    if (sec) setTimeout(function(){ sec.scrollIntoView({behavior:'smooth',block:'start'}); }, 100);
+  }
 }
 function addCart(name) {
   cartCount++;
@@ -798,6 +923,101 @@ function initFadeUp() {
   document.querySelectorAll('.fade-up:not(.visible)').forEach(function(el){ obs.observe(el); });
 }
 window.addEventListener('DOMContentLoaded', initFadeUp);
+
+/* ═══════════════════════════════
+   CAROUSEL SYSTEM
+═══════════════════════════════ */
+var autoSlideTimers = {};   // cardId → timer
+var AUTO_DELAY = 3500;      // ms between auto-slides
+
+function getCard(cardId) { return document.getElementById(cardId); }
+function getTrack(cardId) { return document.getElementById('track-' + cardId); }
+
+function goSlide(cardId, idx, e) {
+  if (e) e.stopPropagation();
+  var card = getCard(cardId); if (!card) return;
+  var total = parseInt(card.dataset.slides) || 1;
+  idx = ((idx % total) + total) % total;
+  card.dataset.current = idx;
+  var track = getTrack(cardId);
+  if (track) track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+  // update dots
+  var dots = card.querySelectorAll('.carousel-dot');
+  dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
+  resetAutoSlide(cardId);
+}
+
+function nextSlide(cardId, e) {
+  if (e) e.stopPropagation();
+  var card = getCard(cardId); if (!card) return;
+  goSlide(cardId, (parseInt(card.dataset.current)||0) + 1, null);
+}
+function prevSlide(cardId, e) {
+  if (e) e.stopPropagation();
+  var card = getCard(cardId); if (!card) return;
+  goSlide(cardId, (parseInt(card.dataset.current)||0) - 1, null);
+}
+
+function resetAutoSlide(cardId) {
+  var card = getCard(cardId); if (!card) return;
+  if (parseInt(card.dataset.slides) <= 1) return;
+  clearTimeout(autoSlideTimers[cardId]);
+  autoSlideTimers[cardId] = setTimeout(function() {
+    nextSlide(cardId, null);
+  }, AUTO_DELAY);
+}
+
+function startAutoSlides() {
+  document.querySelectorAll('.product-card[data-slides]').forEach(function(card) {
+    if (parseInt(card.dataset.slides) > 1) resetAutoSlide(card.id);
+  });
+}
+
+/* ── Touch / Mouse drag ── */
+var dragState = {};
+function startDrag(e, cardId) {
+  var touch = e.touches ? e.touches[0] : e;
+  dragState[cardId] = { startX: touch.clientX, dragging: true };
+  var onMove = function(ev) {
+    if (!dragState[cardId] || !dragState[cardId].dragging) return;
+    var t = ev.touches ? ev.touches[0] : ev;
+    var dx = t.clientX - dragState[cardId].startX;
+    if (Math.abs(dx) > 4) {
+      ev.preventDefault();
+      dragState[cardId].moved = true;
+    }
+  };
+  var onEnd = function(ev) {
+    if (!dragState[cardId]) return;
+    var t = ev.changedTouches ? ev.changedTouches[0] : ev;
+    var dx = t.clientX - dragState[cardId].startX;
+    dragState[cardId].dragging = false;
+    if (Math.abs(dx) > 40) {
+      if (dx < 0) nextSlide(cardId, null);
+      else prevSlide(cardId, null);
+    }
+    delete dragState[cardId];
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onEnd);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onEnd);
+  };
+  document.addEventListener('mousemove', onMove, { passive: false });
+  document.addEventListener('mouseup', onEnd);
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('touchend', onEnd);
+}
+
+// Pause auto-slide on hover
+document.addEventListener('mouseover', function(e) {
+  var card = e.target.closest('.product-card[data-slides]');
+  if (card) clearTimeout(autoSlideTimers[card.id]);
+});
+document.addEventListener('mouseout', function(e) {
+  var card = e.target.closest('.product-card[data-slides]');
+  if (card && parseInt(card.dataset.slides) > 1) resetAutoSlide(card.id);
+});
+
 </script>
 </body>
 </html>
