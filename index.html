@@ -1356,9 +1356,15 @@ var CAT_EMOJI = { laptop:'💻', phone:'📱', audio:'🎧', wearable:'⌚', mon
 var CAT_LABEL = { laptop:'laptops', phone:'phones', audio:'audio products', wearable:'wearables', monitor:'monitors', gaming:'gaming products', tv:'televisions', power:'power products' };
 
 window.addEventListener('DOMContentLoaded', function() {
-  ['laptops-grid','phones-grid','audio-grid','wearables-grid','monitors-grid','gaming-grid'].forEach(showSkeletons);
-  db.collection('products').orderBy('createdAt','desc').onSnapshot(function(snap) {
+  ['laptops-grid','phones-grid','audio-grid','wearables-grid','monitors-grid','gaming-grid','tv-grid','power-grid'].forEach(showSkeletons);
+  db.collection('products').onSnapshot(function(snap) {
     products = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+    // Sort client-side: newest first (fallback to name if no createdAt)
+    products.sort(function(a, b) {
+      var ta = (a.createdAt && a.createdAt.seconds) ? a.createdAt.seconds : 0;
+      var tb = (b.createdAt && b.createdAt.seconds) ? b.createdAt.seconds : 0;
+      return tb - ta;
+    });
     renderAll();
   }, function(err) { showToast('Connection error: ' + err.message); });
 });
